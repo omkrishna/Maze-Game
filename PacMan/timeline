@@ -1,0 +1,9 @@
+- random Pacman-ish maze with IIT-D written up front
+- eatable dots 
+- controllable entity - prototype for Pacman/Student
+- auto controlled entities - 3 prototype for Ghosts/Courses
+- collision definitions : pacman-dot & pacman-Ghosts
+- score
+- power pellets
+- multiplayer with scoreboard
+- frontend 

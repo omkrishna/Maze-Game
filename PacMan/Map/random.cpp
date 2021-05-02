@@ -5,8 +5,15 @@
 #include <time.h>
 using namespace std;
 
-const int i_max = 12;
-const int j_max = 16;
+const int sWidth = 1120;
+const int sHeight = 960;
+
+//Tile Constants
+const int tWidth = 40;
+const int tHeight = 40;
+
+const int i_max = sHeight / tHeight;
+const int j_max = sWidth / tWidth;
 int main()
 {
     ofstream fout("Map/mapfile.map");
@@ -15,41 +22,41 @@ int main()
     for (int i = 0; i < i_max; i++)
     {
         for (int j = 0; j < j_max; j++)
-        if (i==0 || i == i_max - 1 || j == 0 || j == j_max - 1)
-            fout << 0 << " ";
-        else
-        {
-            switch (i)
+            if (i == 0 || i == i_max - 1 || j == 0 || j == j_max - 1)
+                fout << 0 << " ";
+            else
             {
-            case 4:
-                if (j == 1 || j == 3 || j == 5 || j == 6 || j == 7 || j == 12 || j == 13)
-                    fout << 2 << " ";
-                else
+                switch (i)
+                {
+                case ((i_max - 4) / 2):
+                    if (j == ((j_max - 14) / 2) || j == ((j_max - 14) / 2 + 2) || j == ((j_max - 14) / 2 + 4) || j == ((j_max - 14) / 2 + 5) || j == ((j_max - 14) / 2 + 6) || j == ((j_max - 14) / 2 + 11) || j == ((j_max - 14) / 2 + 12))
+                        fout << 2 << " ";
+                    else
+                        fout << rand() % 2 + 0 << " ";
+                    break;
+                case ((i_max - 4) / 2 + 1):
+                    if (j == ((j_max - 14) / 2 + 0) || j == ((j_max - 14) / 2 + 2) || j == ((j_max - 14) / 2 + 5) || j == ((j_max - 14) / 2 + 11) || j == ((j_max - 14) / 2 + 13))
+                        fout << 2 << " ";
+                    else
+                        fout << rand() % 2 + 0 << " ";
+                    break;
+                case ((i_max - 4) / 2 + 2):
+                    if (j == ((j_max - 14) / 2 + 0) || j == ((j_max - 14) / 2 + 2) || j == ((j_max - 14) / 2 + 5) || j == ((j_max - 14) / 2 + 8) || j == ((j_max - 14) / 2 + 9) | j == ((j_max - 14) / 2 + 11) || j == ((j_max - 14) / 2 + 13))
+                        fout << 2 << " ";
+                    else
+                        fout << rand() % 2 + 0 << " ";
+                    break;
+                case ((i_max - 4) / 2 + 3):
+                    if (j == ((j_max - 14) / 2 + 0) || j == ((j_max - 14) / 2 + 2) || j == ((j_max - 14) / 2 + 5) || j == ((j_max - 14) / 2 + 11) || j == ((j_max - 14) / 2 + 12))
+                        fout << 2 << " ";
+                    else
+                        fout << rand() % 2 + 0 << " ";
+                    break;
+                default:
                     fout << rand() % 2 + 0 << " ";
-                break;
-            case 5:
-                if (j == 1 || j == 3 || j == 6 || j == 12 || j == 14)
-                    fout << 2 << " ";
-                else
-                    fout << rand() % 2 + 0 << " ";
-                break;
-            case 6:
-                if (j == 1 || j == 3 || j == 6 || j == 9 || j == 10 | j == 12 || j == 14)
-                    fout << 2 << " ";
-                else
-                    fout << rand() % 2 + 0 << " ";
-                break;
-            case 7:
-                if (j == 1 || j == 3 || j == 6 || j == 12 || j == 13)
-                    fout << 2 << " ";
-                else
-                    fout << rand() % 2 + 0 << " ";
-                break;
-            default:
-                fout << rand() % 2 + 0 << " ";
-                break;
+                    break;
+                }
             }
-        }
         fout << "\n";
     }
 

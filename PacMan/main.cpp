@@ -10,13 +10,13 @@
 #include "Tile.cpp" */
 
 //Screen Dimensions
-const int sWidth = 1280;
+const int sWidth = 1120;
 const int sHeight = 960;
 
 //Tile Constants
-const int tWidth = 80;
-const int tHeight = 80;
-const int tNumber = 192; // = 16 * 12
+const int tWidth = 40;
+const int tHeight = 40;
+const int tNumber = (sWidth / tWidth) * (sHeight / tHeight); // = 16 * 12
 const int tSprites = 3;
 
 //Tile Sprites
@@ -28,13 +28,13 @@ const int T2 = 2; // black tile: 2
 Texture tTexture;
 SDL_Rect tClips[tSprites];
 
-SDL_Window *Window = NULL; //Window
+SDL_Window *Window = NULL;      //Window
 SDL_Renderer *WRenderer = NULL; //window Renderer
 
 bool init() //Starts up SDL and creates window
 {
     bool success = true;
-    
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0) //Initialize SDL
     {
         printf("SDL Initialization Error: %s\n", SDL_GetError());
@@ -59,9 +59,9 @@ bool init() //Starts up SDL and creates window
                 success = false;
             }
             else
-            {                
+            {
                 SDL_SetRenderDrawColor(WRenderer, 0xFF, 0xFF, 0xFF, 0xFF); //Renderer color
-                int imgFlags = IMG_INIT_PNG; //PNG loading
+                int imgFlags = IMG_INIT_PNG;                               //PNG loading
                 if (!(IMG_Init(imgFlags) & imgFlags))
                 {
                     printf("SDL_image Error: %s\n", IMG_GetError());
@@ -220,17 +220,16 @@ int main(int argc, char *args[])
     return 0;
 }
 
-
 //TILE CLASS DEFINITIONS
 
 Tile::Tile(int x, int y, int tileType) //Tile Position and Type
-{    
+{
     mBox.x = x; //Get the offsets
     mBox.y = y;
-    
+
     mBox.w = tWidth; //Set the collision box
     mBox.h = tHeight;
-    
+
     mType = tileType; //Get the tile type
 }
 
@@ -243,7 +242,6 @@ int Tile::getType() //Get tileType
 {
     return mType;
 }
-
 
 //TEXTURE CLASS DEFINITIONS
 
