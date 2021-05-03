@@ -5,7 +5,7 @@
 #include <time.h>
 using namespace std;
 
-const int sWidth = 1120;
+const int sWidth = 1040;
 const int sHeight = 960;
 
 //Tile Constants
