@@ -1,0 +1,8 @@
+- paths are 1 tile thick
+- blocks are 2 tile thick
+- outer boundary blocked with a few potential tunnels
+- IITD written across the center
+- side center flanks 
+    - rectangles, L inv L, inv L L
+    - rectangles 22, 13, 31
+    - flanks not symmetrical about the vertical axis

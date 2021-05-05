@@ -79,7 +79,7 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
     bool tilesLoaded = true;
     int x = 0, y = 0; //Tile Offsets
 
-    std::ifstream map("Map/default.map"); //Open mapfile
+    std::ifstream map("Map/mapfile.map"); //Open mapfile
     if (map.fail())
     {
         printf("Mapfile not loaded!\n"); //If mapfile cannot be loaded

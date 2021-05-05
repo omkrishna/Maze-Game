@@ -52,17 +52,143 @@ bool isBoundary(int i, int j)
     return false;
 }
 
-bool randomLine(int row, int width, int i, int j)
+bool randomSquare(int len, int wid, int wid_2, int i, int j)
 {
-    if (i == row && j > 2 && j <= width + 2)
+    if ((j >= 3 && j < 3 + len) || (j <= j_max - 2 && j > j_max - len - 2))
     {
-        return true;
+        if ((i >= 3 && i < 3 + wid) || (i > 3 + wid && i <= 3 + wid + wid_2))
+            return true;
     }
-    if (i == row && j < j_max - 1 && j > (j_max - width - 2))
-        return true;
-
     return false;
-    //cout << x << endl;
+}
+
+bool isCenterFlanks(int i, int j, int r, int r2)
+{
+    /*
+     9,3   9,5              9,23    9,25
+
+
+
+     13,3  13,5             13,23   13,25
+    */
+    if (r == 1)
+    {
+        //rectangles - 2,2 / 3,1 / 1,3
+        if (r2 == 1)
+        {
+            if ((i >= 9 && i <= 10 && j >= 3 && j <= 5))
+                return true;
+            if ((i >= 12 && i <= 13 && j >= 3 && j <= 5))
+                return true;
+
+            if ((i >= 9 && i <= 10 && j >= 23 && j <= 25))
+                return true;
+            if ((i >= 12 && i <= 13 && j >= 23 && j <= 25))
+                return true;
+        }
+        else if (r2 == 2)
+        {
+            if ((i >= 9 && i <= 11 && j >= 3 && j <= 5))
+                return true;
+            if ((i > 12 && i <= 13 && j >= 3 && j <= 5))
+                return true;
+
+            if ((i >= 9 && i <= 11 && j >= 23 && j <= 25))
+                return true;
+            if ((i > 12 && i <= 13 && j >= 23 && j <= 25))
+                return true;
+        }
+        else
+        {
+            if ((i >= 9 && i < 10 && j >= 3 && j <= 5))
+                return true;
+            if ((i >= 11 && i <= 13 && j >= 3 && j <= 5))
+                return true;
+
+            if ((i >= 9 && i < 10 && j >= 23 && j <= 25))
+                return true;
+            if ((i >= 11 && i <= 13 && j >= 23 && j <= 25))
+                return true;
+        }
+    }
+    else if (r == 2)
+    {
+        /*
+            |---
+            |
+                |
+              --|
+        */
+        if (j == 3 && i >= 9 && i <= 11)
+            return true;
+        if (i == 9 && j >= 3 && j <= 5)
+            return true;
+        if (i == 13 && j >= 3 && j <= 5)
+            return true;
+        if (j == 5 && i >= 11 && i <= 13)
+            return true;
+
+        //
+        if (j == 23 && i >= 11 && i <= 13)
+            return true;
+        if (i == 9 && j >= 23 && j <= 25)
+            return true;
+        if (i == 13 && j >= 23 && j <= 25)
+            return true;
+        if (j == 25 && i >= 9 && i <= 11)
+            return true;
+    }
+    else
+    {
+        // inv L L
+        if (j == 3 && i >= 11 && i <= 13)
+            return true;
+        if (i == 13 && j >= 3 && j <= 5)
+            return true;
+        if (i == 9 && j >= 3 && j <= 5)
+            return true;
+        if (j == 5 && i >= 9 && i <= 11)
+            return true;
+
+        //
+        if (j == 23 && i >= 9 && i <= 11)
+            return true;
+        if (i == 9 && j >= 23 && j <= 25)
+            return true;
+        if (i == 13 && j >= 23 && j <= 25)
+            return true;
+        if (j == 25 && i >= 11 && i <= 13)
+            return true;
+    }
+    return false;
+}
+
+bool centralCol(int r, int len_1, int wid_1, int wid_2, int i, int j)
+{
+
+    if (r == 0)
+    {
+        // central col in upper block
+        if (j == 14 && i >= 3 && i <= 7)
+            return true;
+
+        cout << len_1 << "," << wid_1 << endl;
+        if (wid_1 >= 2)
+        {
+            // _|_
+            if (i >= 6 && i <= 7)
+                if (j > 3 + len_1 && j < j_max - 2 - len_1)
+                    return true;
+        }
+    }
+    else
+    {
+        // upper block
+        if ((j > len_1 + 3 && j < 14) || (j > 14 && j < j_max - len_1 - 2))
+            if (i >= 3 && i <= 7)
+                return true;
+    }
+    return false;
 }
 
 int main()
@@ -70,23 +196,43 @@ int main()
     ofstream fout("Map/mapfile.map");
     srand(time(0));
 
-    int r_row = 3 + rand() % 5;
-    int r_width = rand() % j_max / 2;
-    cout << r_row << "," << r_width << endl;
+    int len_1 = 2 + rand() % 6;
+    int wid_1, wid_2;
+
+    int r = rand() % 2; // for Squares
+
+    int r2 = rand() % 3; // for IITD Flanks
+    int r3 = rand() % 3; // for IITD Flanks
+
+    int r4 = rand() % 2; // include mid column
+
+    if (r == 1)
+    {
+        wid_1 = 3;
+        wid_2 = 1;
+    }
+    else
+    {
+        wid_1 = 2;
+        wid_2 = 2;
+    }
+
     for (int i = 1; i <= i_max; i++)
     {
-
         for (int j = 1; j <= j_max; j++)
         {
             if (isBoundary(i, j) or isIITD(i, j))
                 fout << 0 << " ";
-            else if (randomLine(r_row, r_width, i, j))
+            else if (isCenterFlanks(i, j, r2, r3))
+            {
+                fout << 0 << " ";
+            }
+            else if (randomSquare(len_1, wid_1, wid_2, i, j) || centralCol(r4, len_1, wid_1, wid_2, i, j))
             {
                 fout << 0 << " ";
             }
             else
             {
-
                 fout << 1 << " ";
             }
         }
