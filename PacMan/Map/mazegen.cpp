@@ -180,7 +180,7 @@ void genTopBlocks(int start, int end)
     int r = rand() % 2; // to decide if mid col is filled
     int r3 = rand() % 2;
 
-    int r2 = 2 + rand() % 8;
+    int r2 = 3 + rand() % 8;
 
     for (int i = start + 2; i < end - 1; i++)
     {
@@ -251,10 +251,10 @@ void genBottomBlocks(int start, int end)
     // start row is always path
     // end-2 is always path
 
-    int r = 0; // to decide if mid col is filled
-    int r3 = 0;
+    int r = rand() % 2; // to decide if mid col is filled
+    int r3 = rand() % 2;
 
-    int r2 = 2 + rand() % 8;
+    int r2 = 3 + rand() % 8;
 
     for (int i = start; i < end - 2; i++)
     {
@@ -283,11 +283,11 @@ void genBottomBlocks(int start, int end)
                 else
                 {
                     // _|_ shaped
-                    if (i > start + 4 && j >= j_max / 2 - 4 && j <= j_max / 2 + 4)
+                    if (i > start + 2 && j >= j_max / 2 - 4 && j <= j_max / 2 + 4)
                         maze[i][j] = 0;
 
                     // [_|_]
-                    if (i <= start + 3)
+                    if (i <= start + 1)
                     {
                         if ((j < j_max / 2 - 1 && j > j_max / 2 - 7) || (j > j_max / 2 + 1 && j < j_max / 2 + 7))
                             maze[i][j] = 0;
@@ -317,6 +317,19 @@ void genBottomBlocks(int start, int end)
             maze[i][j] = maze[i][j_max - j - 1];
         }
     }
+}
+
+void genTunnels()
+{
+    int r = 1 + rand() % i_max / 2;
+    int r2 = i_max / 2 + rand() % i_max / 2;
+    cout << r << endl;
+    cout << r2 << endl;
+    maze[r][0] = 1;
+    maze[r][j_max - 1] = 1;
+
+    maze[r2][0] = 1;
+    maze[r2][j_max - 1] = 1;
 }
 
 int main()
@@ -358,6 +371,7 @@ int main()
     genMidBlocks(mid_start, mid_end);
     genTopBlocks(top_start, top_end);
     genBottomBlocks(bottom_start, bottom_end);
+    genTunnels();
     createMaze();
 
     fout.close();

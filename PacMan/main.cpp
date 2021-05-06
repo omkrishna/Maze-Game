@@ -126,12 +126,12 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
             tClips[T2].w = tWidth;
             tClips[T2].h = tHeight;
             //white
-            tClips[N].x = 80;
+            tClips[N].x = 0;
             tClips[N].y = 0;
             tClips[N].w = tWidth;
             tClips[N].h = tHeight;
             //grey
-            tClips[T1].x = 160;
+            tClips[T1].x = 200;
             tClips[T1].y = 0;
             tClips[T1].w = tWidth;
             tClips[T1].h = tHeight;
@@ -146,7 +146,7 @@ bool load(Tile *tiles[]) //Loads media
 {
     bool success = true;
 
-    if (!tTexture.loadFromFile("Images/tiles.png")) //Load Tile Texture
+    if (!tTexture.loadFromFile("Images/image.png")) //Load Tile Texture
     {
         printf("Failed to load tile set texture!\n");
         success = false;
