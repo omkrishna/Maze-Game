@@ -323,8 +323,8 @@ void genTunnels()
 {
     int r = 1 + rand() % i_max / 2;
     int r2 = i_max / 2 + rand() % i_max / 2;
-    cout << r << endl;
-    cout << r2 << endl;
+    //cout << r << endl;
+    //cout << r2 << endl;
     maze[r][0] = 1;
     maze[r][j_max - 1] = 1;
 

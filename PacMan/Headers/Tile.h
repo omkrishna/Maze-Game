@@ -6,12 +6,16 @@
 
 class Tile
 {
-public:    
+public:
     Tile(int x, int y, int tileType);
+
     void render();
     int getType();
+    void changeType(int tileType);
 
-private:    
-    SDL_Rect mBox; //Tile Attributes
-    int mType; //Tile Type
+    SDL_Rect getBox();
+
+private:
+    SDL_Rect mBox;
+    int mType;
 };

@@ -9,13 +9,14 @@ class Texture
 public:
     Texture();
     ~Texture();
+
     bool loadFromFile(std::string path);
     void free();
     void setColor(Uint8 red, Uint8 green, Uint8 blue);
     void render(int x, int y, SDL_Rect *clip = NULL, double angle = 0.0, SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
-private:    
-    SDL_Texture *mTexture; //Hardware Texture
-    int mWidth; //Image dimensions
+private:
+    SDL_Texture *mTexture;
+    int mWidth;
     int mHeight;
 };
