@@ -30,8 +30,10 @@ const int tSprites = 2;
 
 //The different tile sprites
 SDL_Rect tClips[tSprites];
-const int N = 1; //no tile
-const int T = 0; //tile
+const int S = 1; //Pellet
+const int T = 0; //Tile
+//const int P = 2;  //Power Pellet
+const int N = 3; //No Tile
 
 //Dot Dimensions and Velocity
 const int dWidth = 40;
@@ -172,41 +174,24 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
         //Sprite sheet
         if (tilesLoaded)
         {
-            //black
-            tClips[T].x = 0;
-            tClips[T].y = 0;
-            tClips[T].w = tWidth;
-            tClips[T].h = tHeight;
-
-            //white
-            /* tClips[N].x = 40;
-			tClips[N].y = 0;
-			tClips[N].w = tWidth;
-			tClips[N].h = tHeight; */
-
-            //grey
-            /* tClips[T].x = 80;
+            int r = rand() % 4;
+			//solid
+			tClips[T].x = 0 + 40 * r;
 			tClips[T].y = 0;
 			tClips[T].w = tWidth;
-			tClips[T].h = tHeight; */
+			tClips[T].h = tHeight;
 
-            //dot-small
-            /* tClips[p].x = 120;
-			tClips[p].y = 0;
-			tClips[p].w = tWidth;
-			tClips[p].h = tHeight; */
+			//border
+			tClips[N].x = 0 + 40 * r;
+			tClips[N].y = 40;
+			tClips[N].w = tWidth;
+			tClips[N].h = tHeight;
 
-            //dot-large
-            /* tClips[P].x = 160;
-			tClips[P].y = 0;
-			tClips[P].w = tWidth;
-			tClips[P].h = tHeight; */
-
-            //grey-border
-            tClips[N].x = 200;
-            tClips[N].y = 0;
-            tClips[N].w = tWidth;
-            tClips[N].h = tHeight;
+			//dot
+			tClips[S].x = 0 + 40 * r;
+			tClips[S].y = 80;
+			tClips[S].w = tWidth;
+			tClips[S].h = tHeight;
         }
     }
 
@@ -235,7 +220,7 @@ bool load(Tile *tiles[]) //Loads media
         }
     }
 
-    if (!tTexture.loadFromFile("Images/image.png")) //Load Tile Texture
+    if (!tTexture.loadFromFile("Images/123.png")) //Load Tile Texture
     {
         printf("Failed to load tile set texture!\n");
         success = false;
@@ -349,6 +334,7 @@ bool wall(SDL_Rect box, Tile *tiles[]) //Check if a WallTile is touched
 
 int main(int argc, char *args[])
 {
+    srand(time(0));
     int exitAnim = 0;
     if (!init())
         printf("Failed to initialize!\n");
@@ -422,9 +408,9 @@ int main(int argc, char *args[])
                 }
             }
 
-            /* std::cout << "\nGAME OVER\nStats:"
+            std::cout << "\nGAME OVER\nStats:"
 					  << "\nPlayer1 (Arrow Keys): \t" << dot[0].score - 1 //First Tile
-					  << "\nPlayer2 (WSAD Keys): \t" << dot[1].score << "\n\n"; */
+					  << /* "\nPlayer2 (WSAD Keys): \t" << dot[1].score << */ "\n\n";
         }
 
         close(tileSet);
@@ -601,14 +587,14 @@ void Dot::move(Tile *tiles[]) //Move and Check sprite collision
     if (mBox.y < 0)
         mBox.y = sHeight - dHeight;
 
-    /* if (!wall(mBox, tiles)) //Illusion of Eaten Pellets
+    if (!wall(mBox, tiles)) //Illusion of Eaten Pellets
 		for (int i = 0; i < tNumber; ++i)
-			if (tiles[i]->getType() == p || tiles[i]->getType() == P)
+			if (tiles[i]->getType() == S /* || tiles[i]->getType() == P */)
 				if (collision(mBox, tiles[i]->getBox()))
 				{
 					tiles[i]->changeType(N);
 					score++;
-				} */
+				}
 }
 
 void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
