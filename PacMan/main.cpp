@@ -26,7 +26,7 @@ SDL_Renderer *WRenderer = NULL; //Window Renderer
 const int tWidth = 40;
 const int tHeight = 40;
 const int tNumber = (sWidth / tWidth) * (sHeight / tHeight);
-const int tSprites = 2;
+const int tSprites = 5;
 
 //The different tile sprites
 SDL_Rect tClips[tSprites];
@@ -175,23 +175,23 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
         if (tilesLoaded)
         {
             int r = rand() % 4;
-			//solid
-			tClips[T].x = 0 + 40 * r;
-			tClips[T].y = 0;
-			tClips[T].w = tWidth;
-			tClips[T].h = tHeight;
+            //solid
+            tClips[T].x = 0 + 40 * r;
+            tClips[T].y = 0;
+            tClips[T].w = tWidth;
+            tClips[T].h = tHeight;
 
-			//border
-			tClips[N].x = 0 + 40 * r;
-			tClips[N].y = 40;
-			tClips[N].w = tWidth;
-			tClips[N].h = tHeight;
+            //border
+            tClips[N].x = 0 + 40 * r;
+            tClips[N].y = 40;
+            tClips[N].w = tWidth;
+            tClips[N].h = tHeight;
 
-			//dot
-			tClips[S].x = 0 + 40 * r;
-			tClips[S].y = 80;
-			tClips[S].w = tWidth;
-			tClips[S].h = tHeight;
+            //dot
+            tClips[S].x = 0 + 40 * r;
+            tClips[S].y = 80;
+            tClips[S].w = tWidth;
+            tClips[S].h = tHeight;
         }
     }
 
@@ -401,123 +401,24 @@ int main(int argc, char *args[])
                     SDL_RenderPresent(WRenderer);
 
                     //Exit Animation
-                    ++frame;
                     exitAnim++;
                     if (exitAnim > 100)
                         quit = true;
+
+					//Go to next frame
+					++frame;
                 }
             }
 
             std::cout << "\nGAME OVER\nStats:"
-					  << "\nPlayer1 (Arrow Keys): \t" << dot[0].score - 1 //First Tile
-					  << /* "\nPlayer2 (WSAD Keys): \t" << dot[1].score << */ "\n\n";
+                      << "\nPlayer1 (Arrow Keys): \t" << dot[0].score - 1 //First Tile
+                      << /* "\nPlayer2 (WSAD Keys): \t" << dot[1].score << */ "\n\n";
         }
 
         close(tileSet);
     }
 
     return 0;
-}
-
-//TEXTURE DEFINITIONS
-
-Texture::Texture() //Initializes
-{
-    mTexture = NULL;
-    mWidth = 0;
-    mHeight = 0;
-}
-
-Texture::~Texture() //Deallocates
-{
-    free();
-}
-
-bool Texture::loadFromFile(std::string path) //Loads image at specified path
-{
-    free();
-    SDL_Texture *newTexture = NULL;
-    SDL_Surface *loadedSurface = IMG_Load(path.c_str());
-    if (loadedSurface == NULL)
-        printf("SDL_image Error: %s\n", IMG_GetError());
-    else
-    {
-        SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0xFF));
-        newTexture = SDL_CreateTextureFromSurface(WRenderer, loadedSurface);
-        if (newTexture == NULL)
-            printf("Texture Error: %s\n", SDL_GetError());
-        else
-        {
-            mWidth = loadedSurface->w;
-            mHeight = loadedSurface->h;
-        }
-
-        SDL_FreeSurface(loadedSurface);
-    }
-
-    mTexture = newTexture;
-    return mTexture != NULL;
-}
-
-void Texture::free() //Frees texture if it exists
-{
-    if (mTexture != NULL)
-    {
-        SDL_DestroyTexture(mTexture);
-        mTexture = NULL;
-        mWidth = 0;
-        mHeight = 0;
-    }
-}
-
-void Texture::setColor(Uint8 red, Uint8 green, Uint8 blue) //Modulates texture rgb
-{
-    SDL_SetTextureColorMod(mTexture, red, green, blue);
-}
-
-//Renders texture at given point
-void Texture::render(int x, int y, SDL_Rect *clip, double angle, SDL_Point *center, SDL_RendererFlip flip)
-{
-    SDL_Rect renderQuad = {x, y, mWidth, mHeight};
-    if (clip != NULL)
-    {
-        renderQuad.w = clip->w;
-        renderQuad.h = clip->h;
-    }
-    SDL_RenderCopyEx(WRenderer, mTexture, clip, &renderQuad, angle, center, flip);
-}
-
-//TILE DEFINITIONS
-
-Tile::Tile(int x, int y, int tileType) //Tile Position and Type
-{
-    mBox.x = x; //Get the offsets
-    mBox.y = y;
-
-    mBox.w = tWidth; //Set the collision box
-    mBox.h = tHeight;
-
-    mType = tileType; //Get the tile type
-}
-
-void Tile::render() //Show Tile
-{
-    tTexture.render(mBox.x, mBox.y, &tClips[mType]);
-}
-
-int Tile::getType() //Get tileType
-{
-    return mType;
-}
-
-void Tile::changeType(int tileType) //Change tileType
-{
-    mType = tileType;
-}
-
-SDL_Rect Tile::getBox() //Get Collision Box
-{
-    return mBox;
 }
 
 //GHOST DEFINITIONS
@@ -547,7 +448,7 @@ void Ghost::render() //Shows Ghost
 
 bool Ghost::isDead()
 {
-    return mFrame > 20;
+    return mFrame > 15;
 }
 
 //DOT DEFINITIONS
@@ -562,7 +463,7 @@ Dot::Dot() //Initializes Variables
 
     mVelX = 0; //Dot velocity
     mVelY = 0;
-    
+
     for (int i = 0; i < ghNumber; ++i) //Initialize Ghosts
         Ghosts[i] = new Ghost(sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, i);
 }
@@ -578,7 +479,7 @@ void Dot::move(Tile *tiles[]) //Move and Check sprite collision
     if (mBox.x < 0)
         mBox.x = sWidth - dWidth;
 
-    mBox.y += mVelY; //Move up or down
+    mBox.y += mVelY;       //Move up or down
     if (wall(mBox, tiles)) //Collision with wall
         mBox.y -= mVelY;
 
@@ -588,13 +489,13 @@ void Dot::move(Tile *tiles[]) //Move and Check sprite collision
         mBox.y = sHeight - dHeight;
 
     if (!wall(mBox, tiles)) //Illusion of Eaten Pellets
-		for (int i = 0; i < tNumber; ++i)
-			if (tiles[i]->getType() == S /* || tiles[i]->getType() == P */)
-				if (collision(mBox, tiles[i]->getBox()))
-				{
-					tiles[i]->changeType(N);
-					score++;
-				}
+        for (int i = 0; i < tNumber; ++i)
+            if (tiles[i]->getType() == S /* || tiles[i]->getType() == P */)
+                if (collision(mBox, tiles[i]->getBox()))
+                {
+                    tiles[i]->changeType(N);
+                    score++;
+                }
 }
 
 void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
@@ -632,7 +533,7 @@ void Dot::handleEvent(SDL_Event &e, int n, Tile *tiles[]) //Takes Key Presses
             {
             case SDLK_UP:
                 dir = uDir;
-                mVelY -= dVel;\
+                mVelY -= dVel;
                 animFlag = true;
                 break;
             case SDLK_DOWN:
@@ -678,59 +579,59 @@ void Dot::handleEvent(SDL_Event &e, int n, Tile *tiles[]) //Takes Key Presses
     }
     break;
 
-        /* case 1: //Player 2: W S A D
-	{
-		if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
-		{
-			switch (e.key.keysym.sym)
-			{
-			case SDLK_w:
-				dir = uDir;
-				mVelY -= dVel;
-				animFlag = true;
-				break;
-			case SDLK_s:
-				dir = dDir;
-				mVelY += dVel;
-				animFlag = true;
-				break;
-			case SDLK_a:
-				dir = lDir;
-				mVelX -= dVel;
-				animFlag = true;
-				break;
-			case SDLK_d:
-				dir = rDir;
-				mVelX += dVel;
-				animFlag = true;
-				break;
-			}
-		}
+    /* case 1: //Player 2: W S A D
+    {
+        if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
+        {
+            switch (e.key.keysym.sym)
+            {
+            case SDLK_w:
+                dir = uDir;
+                mVelY -= dVel;
+                animFlag = true;
+                break;
+            case SDLK_s:
+                dir = dDir;
+                mVelY += dVel;
+                animFlag = true;
+                break;
+            case SDLK_a:
+                dir = lDir;
+                mVelX -= dVel;
+                animFlag = true;
+                break;
+            case SDLK_d:
+                dir = rDir;
+                mVelX += dVel;
+                animFlag = true;
+                break;
+            }
+        }
 
-		else if (e.type == SDL_KEYUP && e.key.repeat == 0)
-		{
-			switch (e.key.keysym.sym)
-			{
-			case SDLK_w:
-				mVelY += dVel;
-				animFlag = false;
-				break;
-			case SDLK_s:
-				mVelY -= dVel;
-				animFlag = false;
-				break;
-			case SDLK_a:
-				mVelX += dVel;
-				animFlag = false;
-				break;
-			case SDLK_d:
-				mVelX -= dVel;
-				animFlag = false;
-				break;
-			}
-		}
-	}
-	break; */
+        else if (e.type == SDL_KEYUP && e.key.repeat == 0)
+        {
+            switch (e.key.keysym.sym)
+            {
+            case SDLK_w:
+                mVelY += dVel;
+                animFlag = false;
+                break;
+            case SDLK_s:
+                mVelY -= dVel;
+                animFlag = false;
+                break;
+            case SDLK_a:
+                mVelX += dVel;
+                animFlag = false;
+                break;
+            case SDLK_d:
+                mVelX -= dVel;
+                animFlag = false;
+                break;
+            }
+        }
+    }
+    break; */
 
     default:
         break;
@@ -739,14 +640,50 @@ void Dot::handleEvent(SDL_Event &e, int n, Tile *tiles[]) //Takes Key Presses
 
 void Dot::renderGhosts(Tile *tiles[])
 {
-    SDL_Rect Blinky = {mBox.x, mBox.y, mBox.w, mBox.h};
-    SDL_Rect Pinky = {mBox.x + 2 * dWidth, mBox.y + 2 * dHeight, mBox.w, mBox.h}; //TODO: Improve Logic
+    SDL_Rect Blinky_t = {mBox.x, mBox.y, mBox.w, mBox.h}; //Blinky: Ghosts[0]
+    setTarget(Blinky_t, tiles, 0);
 
-    setTarget(Blinky, tiles, 0);
-    setTarget(Pinky, tiles, 1);
+    int pinky_x = 0, pinky_y = 0;
+    if (dir == uDir)
+        pinky_y = 2 * dHeight;
+    if (dir == dDir)
+        pinky_y = -3 * dHeight;
+    if (dir == rDir)
+        pinky_x = 3 * dHeight;
+    if (dir == lDir)
+        pinky_x = -2 * dHeight;
+
+    /* SDL_Rect Pinky_t; //Pinky: Ghosts[1]
+	Pinky_t = {mBox.x + pinky_x, mBox.y + pinky_y, mBox.w, mBox.h};
+	setTarget(Pinky_t, tiles, 1); */
+
+    /* SDL_Rect Inky_t = {2 * pinky_x - Ghosts[0]->mBox.x, 2 * pinky_y - Ghosts[0]->mBox.y, mBox.w, mBox.h}; //Inky: Ghosts[2]
+	setTarget(Inky_t, tiles, 2); */
+
+    /* SDL_Rect Clyde_t; //Clyde: Ghosts[3]
+	if (dist(Ghosts[3]->mBox, mBox) > 8 * tHeight)
+		Clyde_t = {mBox.x, mBox.y, mBox.w, mBox.h};
+	else
+		Clyde_t = {sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, mBox.w, mBox.h};
+	setTarget(Clyde_t, tiles, 3); */
+
+    /* if (audit == false)
+	{
+		SDL_Rect Inky_t = {2 * pinky_x - Ghosts[0]->mBox.x, 2 * pinky_y - Ghosts[0]->mBox.y, mBox.w, mBox.h}; //Inky: Ghosts[2].1
+		setTarget(Inky_t, tiles, 2);
+	}
+	else
+	{
+		SDL_Rect Clyde_t; //Clyde: Ghosts[2].2
+		if (dist(Ghosts[2]->mBox, mBox) > 8 * tHeight)
+			Clyde_t = {mBox.x, mBox.y, mBox.w, mBox.h};
+		else
+			Clyde_t = {sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, mBox.w, mBox.h};
+		setTarget(Clyde_t, tiles, 2);
+	} */
 
     for (int i = 0; i < ghNumber; ++i)
-        
+
         if (Ghosts[i]->isDead()) //Delete and Replace Dead Ghosts
         {
             delete Ghosts[i];
@@ -815,4 +752,105 @@ void Dot::setTarget(SDL_Rect ghost, Tile *tiles[], int i)
         if (Ghosts[i]->isDead())
             ghDir[i] = ghR;
     }
+}
+
+//TILE DEFINITIONS
+
+Tile::Tile(int x, int y, int tileType) //Tile Position and Type
+{
+    mBox.x = x; //Get the offsets
+    mBox.y = y;
+
+    mBox.w = tWidth; //Set the collision box
+    mBox.h = tHeight;
+
+    mType = tileType; //Get the tile type
+}
+
+void Tile::render() //Show Tile
+{
+    tTexture.render(mBox.x, mBox.y, &tClips[mType]);
+}
+
+int Tile::getType() //Get tileType
+{
+    return mType;
+}
+
+void Tile::changeType(int tileType) //Change tileType
+{
+    mType = tileType;
+}
+
+SDL_Rect Tile::getBox() //Get Collision Box
+{
+    return mBox;
+}
+
+//TEXTURE DEFINITIONS
+
+Texture::Texture() //Initializes
+{
+    mTexture = NULL;
+    mWidth = 0;
+    mHeight = 0;
+}
+
+Texture::~Texture() //Deallocates
+{
+    free();
+}
+
+bool Texture::loadFromFile(std::string path) //Loads image at specified path
+{
+    free();
+    SDL_Texture *newTexture = NULL;
+    SDL_Surface *loadedSurface = IMG_Load(path.c_str());
+    if (loadedSurface == NULL)
+        printf("SDL_image Error: %s\n", IMG_GetError());
+    else
+    {
+        SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0xFF));
+        newTexture = SDL_CreateTextureFromSurface(WRenderer, loadedSurface);
+        if (newTexture == NULL)
+            printf("Texture Error: %s\n", SDL_GetError());
+        else
+        {
+            mWidth = loadedSurface->w;
+            mHeight = loadedSurface->h;
+        }
+
+        SDL_FreeSurface(loadedSurface);
+    }
+
+    mTexture = newTexture;
+    return mTexture != NULL;
+}
+
+void Texture::free() //Frees texture if it exists
+{
+    if (mTexture != NULL)
+    {
+        SDL_DestroyTexture(mTexture);
+        mTexture = NULL;
+        mWidth = 0;
+        mHeight = 0;
+    }
+}
+
+void Texture::setColor(Uint8 red, Uint8 green, Uint8 blue) //Modulates texture rgb
+{
+    SDL_SetTextureColorMod(mTexture, red, green, blue);
+}
+
+//Renders texture at given point
+void Texture::render(int x, int y, SDL_Rect *clip, double angle, SDL_Point *center, SDL_RendererFlip flip)
+{
+    SDL_Rect renderQuad = {x, y, mWidth, mHeight};
+    if (clip != NULL)
+    {
+        renderQuad.w = clip->w;
+        renderQuad.h = clip->h;
+    }
+    SDL_RenderCopyEx(WRenderer, mTexture, clip, &renderQuad, angle, center, flip);
 }
