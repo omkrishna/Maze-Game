@@ -9,7 +9,7 @@ class Ghost
 public:
     Ghost(int x, int y, int i);
 
-    void render();
+    void render(int bin);
     bool isDead();
 
     SDL_Rect mBox;

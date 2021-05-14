@@ -53,7 +53,8 @@ int dNumber = 1; //No of Players
 int frame = 0;   //Animation Frame
 
 //Ghost Count and Dimensions
-const int ghNumber = 2;
+const int ghNumber = 4;
+const int ghSprites = 2;
 const int ghWidth = 40;
 const int ghHeight = 40;
 
@@ -61,6 +62,12 @@ const int ghHeight = 40;
 Ghost *Ghosts[ghNumber];        //0:Blinky 1:Pinky
 int px[ghNumber], py[ghNumber]; //Position
 int ghDir[ghNumber] = {0};      //Direction
+
+//Ghost Animation
+SDL_Rect g0Clips[ghSprites];
+SDL_Rect g1Clips[ghSprites];
+SDL_Rect g2Clips[ghSprites];
+SDL_Rect g3Clips[ghSprites];
 
 //Ghost Directions
 const int ghU = 0;
@@ -73,6 +80,8 @@ Texture dTexture;
 Texture tTexture;
 Texture ghTexture0;
 Texture ghTexture1;
+Texture ghTexture2;
+Texture ghTexture3;
 
 //Mixer
 Mix_Music *gMusic = NULL; //Music
@@ -174,7 +183,7 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
         //Sprite sheet
         if (tilesLoaded)
         {
-            int r = rand() % 4;
+            int r = 0; //rand() % 4;
             //solid
             tClips[T].x = 0 + 40 * r;
             tClips[T].y = 0;
@@ -203,7 +212,7 @@ bool load(Tile *tiles[]) //Loads media
 {
     bool success = true;
 
-    if (!dTexture.loadFromFile("Images/dot.png")) //Load sprite sheet texture
+    if (!dTexture.loadFromFile("Images/pacman.png")) //Load sprite sheet texture
     {
         printf("Failed to load PacMan Sprite Animation texture!\n");
         success = false;
@@ -232,16 +241,72 @@ bool load(Tile *tiles[]) //Loads media
         success = false;
     }
 
-    if (!ghTexture0.loadFromFile("Images/ghostw.png")) //Load Ghost Texture
+    if (!ghTexture0.loadFromFile("Images/cop.png")) //Load ghost texture
     {
-        printf("Failed to load ghost texture!\n");
+        printf("Failed to load cop texture!\n");
         success = false;
     }
-
-    if (!ghTexture1.loadFromFile("Images/ghost.png")) //Load Ghost Texture
+    else
     {
-        printf("Failed to load ghost texture!\n");
+        //Set sprite clips
+        for (int i = 0; i < 2; i++)
+        {
+            g0Clips[i].x = dWidth * i;
+            g0Clips[i].y = 0;
+            g0Clips[i].w = dWidth;
+            g0Clips[i].h = dHeight;
+        }
+    }
+
+    if (!ghTexture1.loadFromFile("Images/col.png")) //Load ghost texture
+    {
+        printf("Failed to load col texture!\n");
         success = false;
+    }
+    else
+    {
+        //Set sprite clips
+        for (int i = 0; i < 2; i++)
+        {
+            g1Clips[i].x = dWidth * i;
+            g1Clips[i].y = 0;
+            g1Clips[i].w = dWidth;
+            g1Clips[i].h = dHeight;
+        }
+    }
+
+    if (!ghTexture2.loadFromFile("Images/ell.png")) //Load ghost texture
+    {
+        printf("Failed to load ell texture!\n");
+        success = false;
+    }
+    else
+    {
+        //Set sprite clips
+        for (int i = 0; i < 2; i++)
+        {
+            g2Clips[i].x = dWidth * i;
+            g2Clips[i].y = 0;
+            g2Clips[i].w = dWidth;
+            g2Clips[i].h = dHeight;
+        }
+    }
+
+    if (!ghTexture3.loadFromFile("Images/hukka.png")) //Load ghost texture
+    {
+        printf("Failed to load hukka texture!\n");
+        success = false;
+    }
+    else
+    {
+        //Set sprite clips
+        for (int i = 0; i < 2; i++)
+        {
+            g3Clips[i].x = dWidth * i;
+            g3Clips[i].y = 0;
+            g3Clips[i].w = dWidth;
+            g3Clips[i].h = dHeight;
+        }
     }
 
     gLow = Mix_LoadWAV("Sounds/low.wav"); //Load Music and Sound
@@ -405,8 +470,8 @@ int main(int argc, char *args[])
                     if (exitAnim > 100)
                         quit = true;
 
-					//Go to next frame
-					++frame;
+                    //Go to next frame
+                    ++frame;
                 }
             }
 
@@ -434,21 +499,28 @@ Ghost::Ghost(int x, int y, int i) //Initializes Ghost
     mFrame = 1; //Initialize animation
 
     //Set type
-    if (i == 0) //Blinky
+    if (i == 0)
         mTexture = &ghTexture0;
-    else //Pinky
+    else if (i == 1)
         mTexture = &ghTexture1;
+    else if (i == 2)
+        mTexture = &ghTexture2;
+    else
+        mTexture = &ghTexture3;
 }
 
-void Ghost::render() //Shows Ghost
+void Ghost::render(int bin) //Shows Ghost
 {
-    mTexture->render(mBox.x, mBox.y); //Show image
-    mFrame++;                         //Animate
+    SDL_Rect *currentClip; //Show image
+    currentClip = &dClips[bin];
+    mTexture->render(mBox.x, mBox.y, currentClip);
+
+    mFrame++; //Animate
 }
 
 bool Ghost::isDead()
 {
-    return mFrame > 15;
+    return mFrame > 10;
 }
 
 //DOT DEFINITIONS
@@ -500,11 +572,11 @@ void Dot::move(Tile *tiles[]) //Move and Check sprite collision
 
 void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 {
-    int bin = (frame % dSprites == 0) ? 0 : 1;
+    int bin = (frame % (2 * dSprites) > dSprites) ? 0 : 1;
     SDL_Rect *currentClip;
 
     if (ghosted == false) //Show Ghosts
-        renderGhosts(tiles);
+        renderGhosts(tiles, bin);
 
     if (animFlag) //Animate Dot
     {
@@ -579,7 +651,7 @@ void Dot::handleEvent(SDL_Event &e, int n, Tile *tiles[]) //Takes Key Presses
     }
     break;
 
-    /* case 1: //Player 2: W S A D
+        /* case 1: //Player 2: W S A D
     {
         if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
         {
@@ -638,7 +710,7 @@ void Dot::handleEvent(SDL_Event &e, int n, Tile *tiles[]) //Takes Key Presses
     }
 }
 
-void Dot::renderGhosts(Tile *tiles[])
+void Dot::renderGhosts(Tile *tiles[], int bin)
 {
     SDL_Rect Blinky_t = {mBox.x, mBox.y, mBox.w, mBox.h}; //Blinky: Ghosts[0]
     setTarget(Blinky_t, tiles, 0);
@@ -653,19 +725,20 @@ void Dot::renderGhosts(Tile *tiles[])
     if (dir == lDir)
         pinky_x = -2 * dHeight;
 
-    /* SDL_Rect Pinky_t; //Pinky: Ghosts[1]
+    SDL_Rect Pinky_t; //Pinky: Ghosts[1]
 	Pinky_t = {mBox.x + pinky_x, mBox.y + pinky_y, mBox.w, mBox.h};
-	setTarget(Pinky_t, tiles, 1); */
+	setTarget(Pinky_t, tiles, 1);
 
-    /* SDL_Rect Inky_t = {2 * pinky_x - Ghosts[0]->mBox.x, 2 * pinky_y - Ghosts[0]->mBox.y, mBox.w, mBox.h}; //Inky: Ghosts[2]
-	setTarget(Inky_t, tiles, 2); */
+    //TODO: Improve Logic
+    SDL_Rect Inky_t = {2 * pinky_x - Ghosts[0]->mBox.x, 2 * pinky_y - Ghosts[0]->mBox.y, mBox.w, mBox.h}; //Inky: Ghosts[2]
+	setTarget(Inky_t, tiles, 2);
 
-    /* SDL_Rect Clyde_t; //Clyde: Ghosts[3]
+    SDL_Rect Clyde_t; //Clyde: Ghosts[3]
 	if (dist(Ghosts[3]->mBox, mBox) > 8 * tHeight)
 		Clyde_t = {mBox.x, mBox.y, mBox.w, mBox.h};
 	else
 		Clyde_t = {sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, mBox.w, mBox.h};
-	setTarget(Clyde_t, tiles, 3); */
+	setTarget(Clyde_t, tiles, 3);
 
     /* if (audit == false)
 	{
@@ -691,7 +764,7 @@ void Dot::renderGhosts(Tile *tiles[])
         }
 
     for (int i = 0; i < ghNumber; ++i) //Show Ghosts
-        Ghosts[i]->render();
+        Ghosts[i]->render(bin);
 }
 
 void Dot::setTarget(SDL_Rect ghost, Tile *tiles[], int i)

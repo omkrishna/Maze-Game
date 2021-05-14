@@ -25,6 +25,6 @@ private:
     int mType;
     int mVelX, mVelY;
 
-    void renderGhosts(Tile *tiles[]);
+    void renderGhosts(Tile *tiles[], int bin);
     void setTarget(SDL_Rect ghost, Tile *tiles[], int i);
 };
