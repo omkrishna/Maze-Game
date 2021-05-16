@@ -1,6 +1,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_ttf.h>
+
 #include <bits/stdc++.h>
 #include <stdio.h>
 #include <string>
@@ -59,7 +61,7 @@ const int ghWidth = 40;
 const int ghHeight = 40;
 
 //The Ghosts
-Ghost *Ghosts[ghNumber];        //0:Blinky 1:Pinky
+Ghost *Ghosts[ghNumber];
 int px[ghNumber], py[ghNumber]; //Position
 int ghDir[ghNumber] = {0};      //Direction
 
@@ -75,6 +77,9 @@ const int ghD = 1;
 const int ghL = 2;
 const int ghR = 3;
 
+//Globally used font
+TTF_Font *gFont = NULL;
+
 //Textures
 Texture dTexture;
 Texture tTexture;
@@ -82,6 +87,7 @@ Texture ghTexture0;
 Texture ghTexture1;
 Texture ghTexture2;
 Texture ghTexture3;
+Texture gTextTexture;
 
 //Mixer
 Mix_Music *gMusic = NULL; //Music
@@ -100,7 +106,7 @@ bool init() //Starts up SDL and creates window
     else
     {
         //Window
-        Window = SDL_CreateWindow("Random Maze", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sWidth, sHeight, SDL_WINDOW_SHOWN);
+        Window = SDL_CreateWindow("IITD x Pacman", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sWidth, sHeight, SDL_WINDOW_SHOWN);
         if (Window == NULL)
         {
             printf("Window Error: %s\n", SDL_GetError());
@@ -128,6 +134,12 @@ bool init() //Starts up SDL and creates window
                 if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) //Mixer Loading
                 {
                     printf("SDL_mixer Error: %s\n", Mix_GetError());
+                    success = false;
+                }
+
+                if (TTF_Init() == -1) //Initialize SDL_ttf
+                {
+                    printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
                     success = false;
                 }
             }
@@ -397,10 +409,35 @@ bool wall(SDL_Rect box, Tile *tiles[]) //Check if a WallTile is touched
     return false;
 }
 
+bool loadMedia(std::string s, int n)
+{
+    bool success = true;
+    gFont = TTF_OpenFont("lazy.ttf", n);
+
+    if (gFont == NULL)
+    {
+        printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
+        success = false;
+    }
+    else
+    {
+        SDL_Color textColor = {255, 255, 255};
+        if (!gTextTexture.loadFromRenderedText(s, textColor))
+        {
+            printf("Failed to render text texture!\n");
+            success = false;
+        }
+    }
+
+    return success;
+}
+
 int main(int argc, char *args[])
 {
-    srand(time(0));
+    std::stringstream s;
+    std::srand(time(0));
     int exitAnim = 0;
+
     if (!init())
         printf("Failed to initialize!\n");
     else
@@ -417,67 +454,87 @@ int main(int argc, char *args[])
 
             while (!quit)
             {
+                while (SDL_PollEvent(&e) != 0)
+                {
+                    if (e.type == SDL_QUIT)
+                        quit = true;
+
+                    for (int i = 0; i < dNumber; i++)
+                        dot[i].handleEvent(e, i, tileSet);
+                }
+
+                for (int i = 0; i < dNumber; i++)
+                    dot[i].move(tileSet);
+
+                //Clear screen
+                SDL_SetRenderDrawColor(WRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                SDL_RenderClear(WRenderer);
+
+                //Render current frame
+                for (int i = 0; i < tNumber; ++i)
+                    tileSet[i]->render();
+                for (int i = 0; i < dNumber; i++)
+                    dot[i].render(frame, dot[i].dir, i, tileSet);
+
+                s << "IITD x Pacman";
+                if (!loadMedia(s.str(), 50))
+                    printf("Failed to load media!\n");
+                else
+                    gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, 0);
+                s.str("");
+
                 if (ghosted == false)
                 {
-                    while (SDL_PollEvent(&e) != 0)
-                    {
-                        if (e.type == SDL_QUIT)
-                            quit = true;
-
-                        for (int i = 0; i < dNumber; i++)
-                            dot[i].handleEvent(e, i, tileSet);
-                    }
-
-                    for (int i = 0; i < dNumber; i++)
-                        dot[i].move(tileSet);
-
-                    //Clear screen
-                    SDL_SetRenderDrawColor(WRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-                    SDL_RenderClear(WRenderer);
-
-                    //Render current frame
-                    for (int i = 0; i < tNumber; ++i)
-                        tileSet[i]->render();
-                    for (int i = 0; i < dNumber; i++)
-                        dot[i].render(frame, dot[i].dir, i, tileSet);
-
-                    //Update screen
-                    SDL_RenderPresent(WRenderer);
-
-                    //Go to next frame
-                    ++frame;
-                    if (frame / dSprites >= dSprites)
-                        frame = 0;
+                    s << "Score " << dot[0].score;
+                    if (!loadMedia(s.str(), 40))
+                        printf("Failed to load media!\n");
+                    else
+                        gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, sHeight-gTextTexture.getHeight()-5);
+                    s.str("");
                 }
 
                 else
                 {
-                    //Clear screen
-                    SDL_SetRenderDrawColor(WRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-                    SDL_RenderClear(WRenderer);
-
-                    //Render current frame
+                    exitAnim++;
                     for (int i = 0; i < tNumber; ++i)
                         tileSet[i]->render();
                     for (int i = 0; i < dNumber; i++)
                         dot[i].render(frame, exitAnim % 8, i, tileSet);
 
-                    //Update screen
-                    SDL_RenderPresent(WRenderer);
+                    s << "GAME OVER";
+                    if (!loadMedia(s.str(), 100))
+                        printf("Failed to load media!\n");
+                    else
+                        gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, (sHeight - gTextTexture.getHeight()) / 2 - 80);
+                    s.str("");
 
-                    //Exit Animation
-                    exitAnim++;
-                    if (exitAnim > 100)
+                    s << "YOUR SCORE: " << dot[0].score - 1;
+                    if (!loadMedia(s.str(), 100))
+                        printf("Failed to load media!\n");
+                    else
+                        //Render current frame
+                        gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, (sHeight - gTextTexture.getHeight()) / 2 + 0);
+                    s.str("");
+
+                    /* s << "YOUR SCORE2: " << dot[1].score;
+                    if (!loadMedia(s.str(), 100))
+                        printf("Failed to load media!\n");
+                    else
+                        //Render current frame
+                        gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, (sHeight - gTextTexture.getHeight()) / 2 + 80); */
+
+                    if (exitAnim > 150)
                         quit = true;
-
-                    //Go to next frame
-                    ++frame;
                 }
-            }
 
-            std::cout << "\nGAME OVER\nStats:"
-                      << "\nPlayer1 (Arrow Keys): \t" << dot[0].score - 1 //First Tile
-                      << /* "\nPlayer2 (WSAD Keys): \t" << dot[1].score << */ "\n\n";
+                //Update screen
+                SDL_RenderPresent(WRenderer);
+
+                //Go to next frame
+                ++frame;
+                if (frame / dSprites >= dSprites)
+                    frame = 0;
+            }
         }
 
         close(tileSet);
@@ -520,7 +577,10 @@ void Ghost::render(int bin) //Shows Ghost
 
 bool Ghost::isDead()
 {
-    return mFrame > 10;
+    if (ghosted == false)
+        return mFrame > 10;
+    else
+        return mFrame > 3;
 }
 
 //DOT DEFINITIONS
@@ -575,8 +635,7 @@ void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
     int bin = (frame % (2 * dSprites) > dSprites) ? 0 : 1;
     SDL_Rect *currentClip;
 
-    if (ghosted == false) //Show Ghosts
-        renderGhosts(tiles, bin);
+    renderGhosts(tiles, bin); //Show Ghosts
 
     if (animFlag) //Animate Dot
     {
@@ -595,150 +654,168 @@ void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 
 void Dot::handleEvent(SDL_Event &e, int n, Tile *tiles[]) //Takes Key Presses
 {
-    switch (n)
+    if (ghosted == false)
     {
-    case 0: //Player 1: UP DOWN LEFT RIGHT
-    {
-        if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
+        switch (n)
         {
-            switch (e.key.keysym.sym)
+        case 0: //Player 1: UP DOWN LEFT RIGHT
+        {
+            if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
             {
-            case SDLK_UP:
-                dir = uDir;
-                mVelY -= dVel;
-                animFlag = true;
-                break;
-            case SDLK_DOWN:
-                dir = dDir;
-                mVelY += dVel;
-                animFlag = true;
-                break;
-            case SDLK_LEFT:
-                dir = lDir;
-                mVelX -= dVel;
-                animFlag = true;
-                break;
-            case SDLK_RIGHT:
-                dir = rDir;
-                mVelX += dVel;
-                animFlag = true;
-                break;
+                switch (e.key.keysym.sym)
+                {
+                case SDLK_UP:
+                    dir = uDir;
+                    mVelY -= dVel;
+                    animFlag = true;
+                    break;
+                case SDLK_DOWN:
+                    dir = dDir;
+                    mVelY += dVel;
+                    animFlag = true;
+                    break;
+                case SDLK_LEFT:
+                    dir = lDir;
+                    mVelX -= dVel;
+                    animFlag = true;
+                    break;
+                case SDLK_RIGHT:
+                    dir = rDir;
+                    mVelX += dVel;
+                    animFlag = true;
+                    break;
+                }
+            }
+
+            else if (e.type == SDL_KEYUP && e.key.repeat == 0)
+            {
+                switch (e.key.keysym.sym)
+                {
+                case SDLK_UP:
+                    mVelY += dVel;
+                    animFlag = false;
+                    break;
+                case SDLK_DOWN:
+                    mVelY -= dVel;
+                    animFlag = false;
+                    break;
+                case SDLK_LEFT:
+                    mVelX += dVel;
+                    animFlag = false;
+                    break;
+                case SDLK_RIGHT:
+                    mVelX -= dVel;
+                    animFlag = false;
+                    break;
+                }
             }
         }
-
-        else if (e.type == SDL_KEYUP && e.key.repeat == 0)
-        {
-            switch (e.key.keysym.sym)
-            {
-            case SDLK_UP:
-                mVelY += dVel;
-                animFlag = false;
-                break;
-            case SDLK_DOWN:
-                mVelY -= dVel;
-                animFlag = false;
-                break;
-            case SDLK_LEFT:
-                mVelX += dVel;
-                animFlag = false;
-                break;
-            case SDLK_RIGHT:
-                mVelX -= dVel;
-                animFlag = false;
-                break;
-            }
-        }
-    }
-    break;
-
-        /* case 1: //Player 2: W S A D
-    {
-        if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
-        {
-            switch (e.key.keysym.sym)
-            {
-            case SDLK_w:
-                dir = uDir;
-                mVelY -= dVel;
-                animFlag = true;
-                break;
-            case SDLK_s:
-                dir = dDir;
-                mVelY += dVel;
-                animFlag = true;
-                break;
-            case SDLK_a:
-                dir = lDir;
-                mVelX -= dVel;
-                animFlag = true;
-                break;
-            case SDLK_d:
-                dir = rDir;
-                mVelX += dVel;
-                animFlag = true;
-                break;
-            }
-        }
-
-        else if (e.type == SDL_KEYUP && e.key.repeat == 0)
-        {
-            switch (e.key.keysym.sym)
-            {
-            case SDLK_w:
-                mVelY += dVel;
-                animFlag = false;
-                break;
-            case SDLK_s:
-                mVelY -= dVel;
-                animFlag = false;
-                break;
-            case SDLK_a:
-                mVelX += dVel;
-                animFlag = false;
-                break;
-            case SDLK_d:
-                mVelX -= dVel;
-                animFlag = false;
-                break;
-            }
-        }
-    }
-    break; */
-
-    default:
         break;
+
+        case 1: //Player 2: W S A D
+        {
+            if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
+            {
+                switch (e.key.keysym.sym)
+                {
+                case SDLK_w:
+                    dir = uDir;
+                    mVelY -= dVel;
+                    animFlag = true;
+                    break;
+                case SDLK_s:
+                    dir = dDir;
+                    mVelY += dVel;
+                    animFlag = true;
+                    break;
+                case SDLK_a:
+                    dir = lDir;
+                    mVelX -= dVel;
+                    animFlag = true;
+                    break;
+                case SDLK_d:
+                    dir = rDir;
+                    mVelX += dVel;
+                    animFlag = true;
+                    break;
+                }
+            }
+
+            else if (e.type == SDL_KEYUP && e.key.repeat == 0)
+            {
+                switch (e.key.keysym.sym)
+                {
+                case SDLK_w:
+                    mVelY += dVel;
+                    animFlag = false;
+                    break;
+                case SDLK_s:
+                    mVelY -= dVel;
+                    animFlag = false;
+                    break;
+                case SDLK_a:
+                    mVelX += dVel;
+                    animFlag = false;
+                    break;
+                case SDLK_d:
+                    mVelX -= dVel;
+                    animFlag = false;
+                    break;
+                }
+            }
+        }
+        break;
+
+        default:
+            break;
+        }
     }
+
+    else
+    {
+        mVelX = 0;
+        mVelY = 0;
+    };
 }
 
 void Dot::renderGhosts(Tile *tiles[], int bin)
 {
-    SDL_Rect Blinky_t = {mBox.x, mBox.y, mBox.w, mBox.h}; //Blinky: Ghosts[0]
-    setTarget(Blinky_t, tiles, 0);
+    if (ghosted == true)
+    {
+        SDL_Rect Random = {rand() % sWidth, rand() % sHeight, mBox.w, mBox.h};
+        for (int i = 0; i < ghNumber; i++)
+            setTarget(Random, tiles, i);
+    }
+    else
+    {
+        SDL_Rect Blinky_t = {mBox.x, mBox.y, mBox.w, mBox.h}; //Blinky: Ghosts[0]
+        setTarget(Blinky_t, tiles, 0);
 
-    int pinky_x = 0, pinky_y = 0;
-    if (dir == uDir)
-        pinky_y = 2 * dHeight;
-    if (dir == dDir)
-        pinky_y = -3 * dHeight;
-    if (dir == rDir)
-        pinky_x = 3 * dHeight;
-    if (dir == lDir)
-        pinky_x = -2 * dHeight;
+        int pinky_x = 0, pinky_y = 0;
+        if (dir == uDir)
+            pinky_y = 2 * dHeight;
+        if (dir == dDir)
+            pinky_y = -3 * dHeight;
+        if (dir == rDir)
+            pinky_x = 3 * dHeight;
+        if (dir == lDir)
+            pinky_x = -2 * dHeight;
 
-    SDL_Rect Pinky_t; //Pinky: Ghosts[1]
-	Pinky_t = {mBox.x + pinky_x, mBox.y + pinky_y, mBox.w, mBox.h};
-	setTarget(Pinky_t, tiles, 1);
+        SDL_Rect Pinky_t; //Pinky: Ghosts[1]
+        Pinky_t = {mBox.x + pinky_x, mBox.y + pinky_y, mBox.w, mBox.h};
+        setTarget(Pinky_t, tiles, 1);
 
-    //TODO: Improve Logic
-    SDL_Rect Inky_t = {2 * pinky_x - Ghosts[0]->mBox.x, 2 * pinky_y - Ghosts[0]->mBox.y, mBox.w, mBox.h}; //Inky: Ghosts[2]
-	setTarget(Inky_t, tiles, 2);
+        //TODO: Improve Logic
+        SDL_Rect Inky_t = {2 * pinky_x - Ghosts[0]->mBox.x, 2 * pinky_y - Ghosts[0]->mBox.y, mBox.w, mBox.h}; //Inky: Ghosts[2]
+        setTarget(Inky_t, tiles, 2);
 
-    SDL_Rect Clyde_t; //Clyde: Ghosts[3]
-	if (dist(Ghosts[3]->mBox, mBox) > 8 * tHeight)
-		Clyde_t = {mBox.x, mBox.y, mBox.w, mBox.h};
-	else
-		Clyde_t = {sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, mBox.w, mBox.h};
-	setTarget(Clyde_t, tiles, 3);
+        SDL_Rect Clyde_t; //Clyde: Ghosts[3]
+        if (dist(Ghosts[3]->mBox, mBox) > 8 * tHeight)
+            Clyde_t = {mBox.x, mBox.y, mBox.w, mBox.h};
+        else
+            Clyde_t = {sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, mBox.w, mBox.h};
+        setTarget(Clyde_t, tiles, 3);
+    }
 
     /* if (audit == false)
 	{
@@ -900,6 +977,31 @@ bool Texture::loadFromFile(std::string path) //Loads image at specified path
     return mTexture != NULL;
 }
 
+bool Texture::loadFromRenderedText(std::string textureText, SDL_Color textColor)
+{
+    free();
+    SDL_Surface *textSurface = TTF_RenderText_Solid(gFont, textureText.c_str(), textColor);
+
+    if (textSurface == NULL)
+        printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
+    else
+    {
+        mTexture = SDL_CreateTextureFromSurface(WRenderer, textSurface);
+
+        if (mTexture == NULL)
+            printf("Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError());
+        else //Get image dimensions
+        {
+            mWidth = textSurface->w;
+            mHeight = textSurface->h;
+        }
+
+        SDL_FreeSurface(textSurface);
+    }
+
+    return mTexture != NULL;
+}
+
 void Texture::free() //Frees texture if it exists
 {
     if (mTexture != NULL)
@@ -914,6 +1016,16 @@ void Texture::free() //Frees texture if it exists
 void Texture::setColor(Uint8 red, Uint8 green, Uint8 blue) //Modulates texture rgb
 {
     SDL_SetTextureColorMod(mTexture, red, green, blue);
+}
+
+int Texture::getWidth() //Return Texture Width
+{
+    return mWidth;
+}
+
+int Texture::getHeight() //Return Texture Height
+{
+    return mHeight;
 }
 
 //Renders texture at given point
