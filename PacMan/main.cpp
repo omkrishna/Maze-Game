@@ -4,6 +4,8 @@
 #include <SDL2/SDL_ttf.h>
 
 #include <bits/stdc++.h>
+#include <ctime>
+#include <cmath>
 #include <stdio.h>
 #include <string>
 #include <fstream>
@@ -14,8 +16,12 @@
 #include "Headers/Dot.h"
 #include "Headers/Ghost.h"
 
+int time_req;
+
 //GamePlay Flags
 bool quit = false;
+bool audit = false;
+bool scatter = false;
 bool ghosted = false;
 
 //Screen and Window
@@ -34,8 +40,9 @@ const int tSprites = 5;
 SDL_Rect tClips[tSprites];
 const int S = 1; //Pellet
 const int T = 0; //Tile
-//const int P = 2;  //Power Pellet
-const int N = 3; //No Tile
+const int P = 2; //Power Pellet: Scatter
+const int A = 3; //Audit Pellet: Audit
+const int N = 4; //No Tile
 
 //Dot Dimensions and Velocity
 const int dWidth = 40;
@@ -55,7 +62,7 @@ int dNumber = 1; //No of Players
 int frame = 0;   //Animation Frame
 
 //Ghost Count and Dimensions
-const int ghNumber = 4;
+const int ghNumber = 3;
 const int ghSprites = 2;
 const int ghWidth = 40;
 const int ghHeight = 40;
@@ -76,6 +83,11 @@ const int ghU = 0;
 const int ghD = 1;
 const int ghL = 2;
 const int ghR = 3;
+
+//Ghost Corners
+SDL_Rect Corner[3] = {{sWidth - ghWidth - tWidth, ghHeight - tHeight, tWidth, tHeight},
+                      {sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, tWidth, tHeight},
+                      {ghWidth - tWidth, sHeight - ghHeight - tHeight, tWidth, tHeight}};
 
 //Globally used font
 TTF_Font *gFont = NULL;
@@ -154,7 +166,7 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
     bool tilesLoaded = true;
     int x = 0, y = 0; //Tile Offsets
 
-    std::ifstream map("Map/mapfile.map"); //Open mapfile
+    std::ifstream map("Map/default.map"); //Open mapfile
     if (map.fail())
     {
         printf("Mapfile not loaded!\n"); //If mapfile cannot be loaded
@@ -213,6 +225,18 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
             tClips[S].y = 80;
             tClips[S].w = tWidth;
             tClips[S].h = tHeight;
+
+            //power
+            tClips[P].x = 80;
+            tClips[P].y = 80;
+            tClips[P].w = tWidth;
+            tClips[P].h = tHeight;
+
+            //audit
+            tClips[A].x = 120;
+            tClips[A].y = 80;
+            tClips[A].w = tWidth;
+            tClips[A].h = tHeight;
         }
     }
 
@@ -454,6 +478,14 @@ int main(int argc, char *args[])
 
             while (!quit)
             {
+                ++time_req;
+
+                if (time_req > 300)
+                {
+                    audit = false;
+                    scatter = false;
+                }
+
                 while (SDL_PollEvent(&e) != 0)
                 {
                     if (e.type == SDL_QUIT)
@@ -489,8 +521,28 @@ int main(int argc, char *args[])
                     if (!loadMedia(s.str(), 40))
                         printf("Failed to load media!\n");
                     else
-                        gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, sHeight-gTextTexture.getHeight()-5);
+                        gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, sHeight - gTextTexture.getHeight() - 5);
                     s.str("");
+
+                    if (audit == true)
+                    {
+                        s << "Audit";
+                        if (!loadMedia(s.str(), 40))
+                            printf("Failed to load media!\n");
+                        else
+                            gTextTexture.render(0, sHeight - gTextTexture.getHeight() - 5);
+                        s.str("");
+                    }
+
+                    if (scatter == true)
+                    {
+                        s << "Scatter";
+                        if (!loadMedia(s.str(), 40))
+                            printf("Failed to load media!\n");
+                        else
+                            gTextTexture.render(sWidth - gTextTexture.getWidth(), sHeight - gTextTexture.getHeight() - 5);
+                        s.str("");
+                    }
                 }
 
                 else
@@ -500,6 +552,8 @@ int main(int argc, char *args[])
                         tileSet[i]->render();
                     for (int i = 0; i < dNumber; i++)
                         dot[i].render(frame, exitAnim % 8, i, tileSet);
+
+                    //tTexture.setAlpha(0.9);
 
                     s << "GAME OVER";
                     if (!loadMedia(s.str(), 100))
@@ -622,12 +676,32 @@ void Dot::move(Tile *tiles[]) //Move and Check sprite collision
 
     if (!wall(mBox, tiles)) //Illusion of Eaten Pellets
         for (int i = 0; i < tNumber; ++i)
-            if (tiles[i]->getType() == S /* || tiles[i]->getType() == P */)
+        {
+            if (tiles[i]->getType() == S)
                 if (collision(mBox, tiles[i]->getBox()))
                 {
                     tiles[i]->changeType(N);
                     score++;
                 }
+
+            if (tiles[i]->getType() == P)
+                if (collision(mBox, tiles[i]->getBox()))
+                {
+                    scatter = true;
+                    time_req = 0; //Set Time to Zero
+                    tiles[i]->changeType(N);
+                    score += 20;
+                }
+
+            if (tiles[i]->getType() == A)
+                if (collision(mBox, tiles[i]->getBox()))
+                {
+                    audit = true;
+                    time_req = 0; //Set Time to Zero
+                    tiles[i]->changeType(N);
+                    score += 20;
+                }
+        }
 }
 
 void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
@@ -788,49 +862,50 @@ void Dot::renderGhosts(Tile *tiles[], int bin)
     }
     else
     {
-        SDL_Rect Blinky_t = {mBox.x, mBox.y, mBox.w, mBox.h}; //Blinky: Ghosts[0]
-        setTarget(Blinky_t, tiles, 0);
-
-        int pinky_x = 0, pinky_y = 0;
-        if (dir == uDir)
-            pinky_y = 2 * dHeight;
-        if (dir == dDir)
-            pinky_y = -3 * dHeight;
-        if (dir == rDir)
-            pinky_x = 3 * dHeight;
-        if (dir == lDir)
-            pinky_x = -2 * dHeight;
-
-        SDL_Rect Pinky_t; //Pinky: Ghosts[1]
-        Pinky_t = {mBox.x + pinky_x, mBox.y + pinky_y, mBox.w, mBox.h};
-        setTarget(Pinky_t, tiles, 1);
-
-        //TODO: Improve Logic
-        SDL_Rect Inky_t = {2 * pinky_x - Ghosts[0]->mBox.x, 2 * pinky_y - Ghosts[0]->mBox.y, mBox.w, mBox.h}; //Inky: Ghosts[2]
-        setTarget(Inky_t, tiles, 2);
-
-        SDL_Rect Clyde_t; //Clyde: Ghosts[3]
-        if (dist(Ghosts[3]->mBox, mBox) > 8 * tHeight)
-            Clyde_t = {mBox.x, mBox.y, mBox.w, mBox.h};
+        if (audit == true)
+        {
+            for (int i = 0; i < ghNumber; i++)
+            {
+                SDL_Rect Clyde_t; //Clyde: Ghosts[3]
+                if (dist(Ghosts[i]->mBox, mBox) > 8 * tHeight)
+                    Clyde_t = {mBox.x, mBox.y, mBox.w, mBox.h};
+                else
+                    Clyde_t = Corner[i];
+                setTarget(Clyde_t, tiles, i);
+            }
+        }
+        else if (scatter == true)
+        {
+            for (int i = 0; i < ghNumber; i++)
+            {
+                SDL_Rect Clyde_t = Corner[i];
+                setTarget(Clyde_t, tiles, i);
+            }
+        }
         else
-            Clyde_t = {sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, mBox.w, mBox.h};
-        setTarget(Clyde_t, tiles, 3);
-    }
+        {
+            SDL_Rect Blinky_t = {mBox.x, mBox.y, mBox.w, mBox.h}; //Blinky: Ghosts[0]
+            setTarget(Blinky_t, tiles, 0);
 
-    /* if (audit == false)
-	{
-		SDL_Rect Inky_t = {2 * pinky_x - Ghosts[0]->mBox.x, 2 * pinky_y - Ghosts[0]->mBox.y, mBox.w, mBox.h}; //Inky: Ghosts[2].1
-		setTarget(Inky_t, tiles, 2);
-	}
-	else
-	{
-		SDL_Rect Clyde_t; //Clyde: Ghosts[2].2
-		if (dist(Ghosts[2]->mBox, mBox) > 8 * tHeight)
-			Clyde_t = {mBox.x, mBox.y, mBox.w, mBox.h};
-		else
-			Clyde_t = {sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, mBox.w, mBox.h};
-		setTarget(Clyde_t, tiles, 2);
-	} */
+            int pinky_x = 0, pinky_y = 0;
+            if (dir == uDir)
+                pinky_y = 2 * dHeight;
+            if (dir == dDir)
+                pinky_y = -3 * dHeight;
+            if (dir == rDir)
+                pinky_x = 3 * dHeight;
+            if (dir == lDir)
+                pinky_x = -2 * dHeight;
+
+            SDL_Rect Pinky_t; //Pinky: Ghosts[1]
+            Pinky_t = {mBox.x + pinky_x, mBox.y + pinky_y, mBox.w, mBox.h};
+            setTarget(Pinky_t, tiles, 1);
+
+            //TODO: Improve Logic
+            SDL_Rect Inky_t = {2 * pinky_x - Ghosts[0]->mBox.x, 2 * pinky_y - Ghosts[0]->mBox.y, mBox.w, mBox.h}; //Inky: Ghosts[2]
+            setTarget(Inky_t, tiles, 2);
+        }
+    }
 
     for (int i = 0; i < ghNumber; ++i)
 
@@ -859,16 +934,16 @@ void Dot::setTarget(SDL_Rect ghost, Tile *tiles[], int i)
 
     int udist, ddist, ldist, rdist;
     udist = ddist = ldist = rdist = INT_MAX;
-    if (!wall(uBox, tiles))
+    if (!wall(uBox, tiles) && uBox.y > 0)
         if (ghDir[i] != ghD)
             udist = dist(uBox, ghost);
-    if (!wall(dBox, tiles))
+    if (!wall(dBox, tiles) && dBox.y < sHeight)
         if (ghDir[i] != ghU)
             ddist = dist(dBox, ghost);
-    if (!wall(lBox, tiles))
+    if (!wall(lBox, tiles) && lBox.x > 0)
         if (ghDir[i] != ghR)
             ldist = dist(lBox, ghost);
-    if (!wall(rBox, tiles))
+    if (!wall(rBox, tiles) && rBox.x < sWidth)
         if (ghDir[i] != ghL)
             rdist = dist(rBox, ghost);
 
@@ -1012,8 +1087,11 @@ void Texture::free() //Frees texture if it exists
         mHeight = 0;
     }
 }
-
-void Texture::setColor(Uint8 red, Uint8 green, Uint8 blue) //Modulates texture rgb
+void Texture::setAlpha(Uint8 alpha) //Modulates Texture Alpha
+{
+    SDL_SetTextureAlphaMod(mTexture, alpha);
+}
+void Texture::setColor(Uint8 red, Uint8 green, Uint8 blue) //Modulates Texture RGB
 {
     SDL_SetTextureColorMod(mTexture, red, green, blue);
 }
