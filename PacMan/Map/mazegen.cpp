@@ -25,10 +25,7 @@ void createMaze()
     for (int i = 0; i < i_max; i++)
     {
         for (int j = 0; j < j_max; j++)
-            if (maze[i][j] == 0)
-                fout << 0 << " ";
-            else
-                fout << 1 << " ";
+            fout << maze[i][j] << " ";
         fout << endl;
     }
 }
@@ -44,28 +41,28 @@ void genMidBlocks(int start, int end)
             {
                 if (j == ((j_max - 15) / 2) || j == ((j_max - 15) / 2 + 1) || j == ((j_max - 15) / 2 + 3) || j == ((j_max - 15) / 2 + 4) || j == ((j_max - 15) / 2 + 6) || j == ((j_max - 15) / 2 + 7) || j == ((j_max - 15) / 2 + 8) || j == ((j_max - 15) / 2 + 9) || j == ((j_max - 15) / 2 + 11) || j == ((j_max - 15) / 2 + 12) || j == ((j_max - 15) / 2 + 13))
                 {
-                    maze[i][j] = 0;
+                    maze[i][j] = 5;
                 }
             }
             else if (i == start)
             {
                 if (j == ((j_max - 14) / 2) || j == ((j_max - 15) / 2 + 1) || j == ((j_max - 15) / 2 + 3) || j == ((j_max - 15) / 2 + 4) || j == ((j_max - 15) / 2 + 6) || j == ((j_max - 15) / 2 + 7) || j == ((j_max - 15) / 2 + 8) || j == ((j_max - 15) / 2 + 9) || j == ((j_max - 15) / 2 + 11) || j == ((j_max - 15) / 2 + 12) || j == ((j_max - 15) / 2 + 14))
-                    maze[i][j] = 0;
+                    maze[i][j] = 5;
             }
             else if (i == start + 1)
             {
                 if (j == ((j_max - 14) / 2) || j == ((j_max - 15) / 2 + 1) || j == ((j_max - 15) / 2 + 3) || j == ((j_max - 15) / 2 + 4) || j == ((j_max - 15) / 2 + 7) || j == ((j_max - 15) / 2 + 8) || j == ((j_max - 15) / 2 + 11) || j == ((j_max - 15) / 2 + 12) || j == ((j_max - 15) / 2 + 14))
-                    maze[i][j] = 0;
+                    maze[i][j] = 5;
             }
             else if (i == start + 2)
             {
                 if (j == ((j_max - 14) / 2) || j == ((j_max - 15) / 2 + 1) || j == ((j_max - 15) / 2 + 3) || j == ((j_max - 15) / 2 + 4) || j == ((j_max - 15) / 2 + 7) || j == ((j_max - 15) / 2 + 8) || j == ((j_max - 15) / 2 + 11) || j == ((j_max - 15) / 2 + 12) || j == ((j_max - 15) / 2 + 14))
-                    maze[i][j] = 0;
+                    maze[i][j] = 5;
             }
             else if (i == start + 3)
             {
                 if (j == ((j_max - 15) / 2) || j == ((j_max - 15) / 2 + 1) || j == ((j_max - 15) / 2 + 3) || j == ((j_max - 15) / 2 + 4) || j == ((j_max - 15) / 2 + 7) || j == ((j_max - 15) / 2 + 8) || j == ((j_max - 15) / 2 + 11) || j == ((j_max - 15) / 2 + 12) || j == ((j_max - 15) / 2 + 13))
-                    maze[i][j] = 0;
+                    maze[i][j] = 5;
             }
         }
     }
@@ -177,6 +174,22 @@ void genTopBlocks(int start, int end)
     // start row is always blocked and 2nd row is always path
     // end is always path
 
+    int egg = rand() % 10;
+    if (egg == 6)
+    {
+        for (int i = start + 2; i < end - 1; i++)
+        {
+            for (int j = 2; j < j_max; j++)
+            {
+                if (j % 2 == 0)
+                {
+                    maze[i][j] = 0;
+                }
+            }
+        }
+        return;
+    }
+
     int r = rand() % 2; // to decide if mid col is filled
     int r3 = rand() % 2;
 
@@ -250,6 +263,22 @@ void genBottomBlocks(int start, int end)
     // generate random blocks for first half and then mirror
     // start row is always path
     // end-2 is always path
+
+    int egg = rand() % 10;
+    if (egg == 9)
+    {
+        for (int i = start; i < end - 2; i++)
+        {
+            for (int j = 2; j < j_max; j++)
+            {
+                if (j % 2 == 0)
+                {
+                    maze[i][j] = 0;
+                }
+            }
+        }
+        return;
+    }
 
     int r = rand() % 2; // to decide if mid col is filled
     int r3 = rand() % 2;
