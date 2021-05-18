@@ -8,6 +8,7 @@ class Dot
 {
 public:
     Dot();
+    Dot(int i);
 
     bool ghosted = false;
     bool audit = false;
@@ -22,6 +23,8 @@ public:
     void handleEvent(SDL_Event &e, int n, Tile *tiles[]);
     void move(Tile *tiles[]);
     void render(int frame, int dir, int i, Tile *tiles[]);
+    void renderFirst(int frame, int dir, int i, Tile *tiles[]);
+    void renderSecond(int frame, int dir, int i, Tile *tiles[]);
 
     SDL_Rect getBox();
 

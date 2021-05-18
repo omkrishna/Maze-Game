@@ -601,7 +601,12 @@ int main(int argc, char *args[])
 		else
 		{
 			SDL_Event e;
+
 			Dot dot[dNumber];
+			for (int i = 0; i < dNumber; i++)
+			{
+				dot[i] = Dot(i);
+			}
 
 			Mix_PlayMusic(gMusic, -1);
 
@@ -663,8 +668,21 @@ int main(int argc, char *args[])
 					//Render current frame
 					for (int i = 0; i < tNumber; ++i)
 						tileSet[i]->render();
+
 					for (int i = 0; i < dNumber; i++)
 						dot[i].render(frame, dot[i].dir, i, tileSet);
+
+					/*
+					if (dNumber == 1)
+					{
+						dot[0].render(frame, dot[0].dir, 0, tileSet);
+					}
+					else if (dNumber == 2)
+					{
+						dot[0].renderFirst(frame, dot[0].dir, 0, tileSet);
+						dot[1].renderSecond(frame, dot[1].dir, 1, tileSet);
+					}
+					*/
 
 					s << "IITD x Pacman";
 					if (!loadMedia(s.str(), 50))
@@ -742,14 +760,14 @@ int main(int argc, char *args[])
 							SDL_RenderClear(WRenderer);
 
 							s << "GAME OVER";
-							if (!loadMedia(s.str(), 100))
+							if (!loadMedia(s.str(), 80))
 								printf("Failed to load media!\n");
 							else
 								gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, (sHeight - gTextTexture.getHeight()) / 2 - 160);
 							s.str("");
 
 							s << "YOUR SCORE (Arrow): " << dot[0].score - 1;
-							if (!loadMedia(s.str(), 100))
+							if (!loadMedia(s.str(), 80))
 								printf("Failed to load media!\n");
 							else
 								//Render current frame
@@ -830,10 +848,22 @@ bool Ghost::isDead()
 
 //DOT DEFINITIONS
 
-Dot::Dot() //Initializes Variables
+Dot::Dot()
 {
-	mBox.x = tWidth; //Collision box offset
-	mBox.y = tHeight;
+}
+
+Dot::Dot(int i) //Initializes Variables
+{
+	if (i == 0)
+	{
+		mBox.x = tWidth; //Collision box offset
+		mBox.y = tHeight;
+	}
+	else
+	{
+		mBox.x = sWidth - ghWidth - tWidth; //Collision box offset
+		mBox.y = tHeight;
+	}
 
 	mBox.w = dWidth; //Collision box dimensions
 	mBox.h = dHeight;
@@ -842,7 +872,14 @@ Dot::Dot() //Initializes Variables
 	mVelY = 0;
 
 	for (int i = 0; i < ghNumber; ++i) //Initialize Ghosts
-		Ghosts[i] = new Ghost(sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, i);
+	{
+		if (i == 0)
+			Ghosts[i] = new Ghost(sWidth - ghWidth - tWidth, sHeight - ghHeight - tHeight, i);
+		else if (i == 1)
+			Ghosts[i] = new Ghost(sWidth - ghWidth - tWidth * 9, sHeight - ghHeight - tHeight, i);
+		else
+			Ghosts[i] = new Ghost(sWidth - ghWidth - tWidth * 18, sHeight - ghHeight - tHeight, i);
+	}
 }
 
 void Dot::move(Tile *tiles[]) //Move and Check sprite collision
@@ -896,6 +933,52 @@ void Dot::move(Tile *tiles[]) //Move and Check sprite collision
 }
 
 void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
+{
+	int bin = (frame % (2 * dSprites) > dSprites) ? 0 : 1;
+	SDL_Rect *currentClip;
+
+	renderGhosts(tiles, bin); //Show Ghosts
+
+	if (animFlag) //Animate Dot
+	{
+		currentClip = &dClips[dir + bin];
+
+		if (ghosted == false)
+			if (i) //Sounds on Key Press
+				Mix_PlayChannel(-1, gHigh, 0);
+			else
+				Mix_PlayChannel(-1, gLow, 0);
+	}
+	else
+		currentClip = &dClips[dir];
+
+	dTexture.render(mBox.x, mBox.y, currentClip); //Show Dot
+}
+
+void Dot::renderFirst(int frame, int dir, int i, Tile *tiles[]) //Show Dot
+{
+	int bin = (frame % (2 * dSprites) > dSprites) ? 0 : 1;
+	SDL_Rect *currentClip;
+
+	renderGhosts(tiles, bin); //Show Ghosts
+
+	if (animFlag) //Animate Dot
+	{
+		currentClip = &dClips[dir + bin];
+
+		if (ghosted == false)
+			if (i) //Sounds on Key Press
+				Mix_PlayChannel(-1, gHigh, 0);
+			else
+				Mix_PlayChannel(-1, gLow, 0);
+	}
+	else
+		currentClip = &dClips[dir];
+
+	dTexture.render(mBox.x, mBox.y, currentClip); //Show Dot
+}
+
+void Dot::renderSecond(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 {
 	int bin = (frame % (2 * dSprites) > dSprites) ? 0 : 1;
 	SDL_Rect *currentClip;
