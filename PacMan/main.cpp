@@ -228,8 +228,8 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
             tClips[S].h = tHeight;
 
             //power
-            tClips[P].x = 40;
-            tClips[P].y = 40;
+            tClips[P].x = 80;
+            tClips[P].y = 80;
             tClips[P].w = tWidth;
             tClips[P].h = tHeight;
 
@@ -443,7 +443,7 @@ bool wall(SDL_Rect box, Tile *tiles[]) //Check if a WallTile is touched
 bool loadMedia(std::string s, int n)
 {
     bool success = true;
-    gFont = TTF_OpenFont("lazy.ttf", n);
+    gFont = TTF_OpenFont("Fonts/lazy.ttf", n);
 
     if (gFont == NULL)
     {
@@ -560,7 +560,7 @@ int main(int argc, char *args[])
                     for (int i = 0; i < dNumber; i++)
                         dot[i].render(frame, exitAnim % 8, i, tileSet);
 
-                    tTexture.setAlpha(200);
+                    tTexture.setAlpha(400);
 
                     s << "GAME OVER";
                     if (!loadMedia(s.str(), 100))

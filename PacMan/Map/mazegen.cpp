@@ -25,7 +25,10 @@ void createMaze()
     for (int i = 0; i < i_max; i++)
     {
         for (int j = 0; j < j_max; j++)
+        {
             fout << maze[i][j] << " ";
+        }
+
         fout << endl;
     }
 }
@@ -361,6 +364,24 @@ void genTunnels()
     maze[r2][j_max - 1] = 1;
 }
 
+void genSpecialPellets()
+{
+    int count = 0;
+    while (count < 5)
+    {
+        int r1 = 1 + rand() % j_max;
+        int r2 = 1 + rand() % i_max;
+        if (maze[r1][r2] == 1)
+        {
+            if (count % 2 == 0)
+                maze[r1][r2] = 2;
+            else
+                maze[r1][r2] = 3;
+            count++;
+        }
+    }
+}
+
 int main()
 {
 
@@ -401,6 +422,7 @@ int main()
     genTopBlocks(top_start, top_end);
     genBottomBlocks(bottom_start, bottom_end);
     genTunnels();
+    genSpecialPellets();
     createMaze();
 
     fout.close();
