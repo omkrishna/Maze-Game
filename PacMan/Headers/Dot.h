@@ -9,6 +9,12 @@ class Dot
 public:
     Dot();
 
+    bool ghosted = false;
+    bool audit = false;
+    bool scatter = false;
+
+    int time_req;
+
     bool animFlag = false;
     int score = 0;
     int dir = 2;
