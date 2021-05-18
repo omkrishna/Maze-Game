@@ -10,15 +10,13 @@ public:
     Dot();
     Dot(int i);
 
-    bool ghosted = false;
-    bool audit = false;
-    bool scatter = false;
-
     int time_req;
-
-    bool animFlag = false;
     int score = 0;
     int dir = 2;
+    bool animFlag = false;
+    bool ghosted = false;
+    bool audit = false;
+    bool por = false;
 
     void handleEvent(SDL_Event &e, int n, Tile *tiles[]);
     void move(Tile *tiles[]);

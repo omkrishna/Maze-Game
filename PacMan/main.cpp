@@ -16,13 +16,9 @@
 #include "Headers/Dot.h"
 #include "Headers/Ghost.h"
 
-bool play = false;
-bool replay = false;
-bool Ghosted = false;
-
 //Button constants
-const int bWidth = 300;
-const int bHeight = 200;
+const int bWidth = 230;
+const int bHeight = 60;
 const int nButton = 2;
 
 enum bTypes
@@ -61,16 +57,14 @@ private:
 
 //Buttons objects
 Button button1; //Single Player
-Texture bTexture1;
 Button button2; //Multi Player
-Texture bTexture2;
-Button button3; //Replay
-Texture bTexture3;
-Button button4; //Quit
-Texture bTexture4;
 
 //GamePlay Flags
+bool Won = false;
 bool quit = false;
+bool play = false;
+bool replay = false;
+bool Ghosted = false;
 
 //Screen and Window
 const int sWidth = 1080;
@@ -88,7 +82,7 @@ const int tSprites = 6;
 SDL_Rect tClips[tSprites];
 const int S = 1; //Pellet
 const int T = 0; //Tile
-const int P = 2; //Power Pellet: Scatter
+const int P = 2; //Power Pellet: por
 const int A = 3; //Audit Pellet: Audit
 const int N = 4; //No Tile
 const int I = 5;
@@ -145,6 +139,8 @@ TTF_Font *gFont = NULL;
 //Textures
 Texture dTexture;
 Texture tTexture;
+Texture bTexture1;
+Texture bTexture2;
 Texture ghTexture0;
 Texture ghTexture1;
 Texture ghTexture2;
@@ -277,14 +273,14 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
 			tClips[S].h = tHeight;
 
 			//power
-			tClips[P].x = 80;
-			tClips[P].y = 80;
+			tClips[P].x = 160;
+			tClips[P].y = 120;
 			tClips[P].w = tWidth;
 			tClips[P].h = tHeight;
 
 			//audit
-			tClips[A].x = 120;
-			tClips[A].y = 80;
+			tClips[A].x = 0;
+			tClips[A].y = 120;
 			tClips[A].w = tWidth;
 			tClips[A].h = tHeight;
 
@@ -304,7 +300,7 @@ bool load(Tile *tiles[]) //Loads media
 {
 	bool success = true;
 
-	if (!bTexture1.loadFromFile("mouse/button.png")) //Single Player
+	if (!bTexture1.loadFromFile("Images/1player(1).png")) //Single Player
 	{
 		printf("Failed to load button sprite texture!\n");
 		success = false;
@@ -314,7 +310,7 @@ bool load(Tile *tiles[]) //Loads media
 		for (int i = 0; i < bSprites; ++i)
 		{
 			bClips[i].x = 0;
-			bClips[i].y = i * 200;
+			bClips[i].y = 0;
 			bClips[i].w = bWidth;
 			bClips[i].h = bHeight;
 		}
@@ -322,7 +318,7 @@ bool load(Tile *tiles[]) //Loads media
 		button1.setPosition((sWidth - bWidth) / 2, 180);
 	}
 
-	if (!bTexture2.loadFromFile("mouse/button.png")) //Multi Player
+	if (!bTexture2.loadFromFile("Images/2player(2).png")) //Multi Player
 	{
 		printf("Failed to load button sprite texture!\n");
 		success = false;
@@ -332,7 +328,7 @@ bool load(Tile *tiles[]) //Loads media
 		for (int i = 0; i < bSprites; ++i)
 		{
 			bClips[i].x = 0;
-			bClips[i].y = i * 200;
+			bClips[i].y = 0;
 			bClips[i].w = bWidth;
 			bClips[i].h = bHeight;
 		}
@@ -340,43 +336,7 @@ bool load(Tile *tiles[]) //Loads media
 		button2.setPosition((sWidth - bWidth) / 2, 380);
 	}
 
-	if (!bTexture3.loadFromFile("mouse/button.png")) //Replay
-	{
-		printf("Failed to load button sprite texture!\n");
-		success = false;
-	}
-	else
-	{
-		for (int i = 0; i < bSprites; ++i)
-		{
-			bClips[i].x = 0;
-			bClips[i].y = i * 200;
-			bClips[i].w = bWidth;
-			bClips[i].h = bHeight;
-		}
-
-		button3.setPosition((sWidth - bWidth) / 2 + 200, 500);
-	}
-
-	if (!bTexture4.loadFromFile("mouse/button.png")) //Quit
-	{
-		printf("Failed to load button sprite texture!\n");
-		success = false;
-	}
-	else
-	{
-		for (int i = 0; i < bSprites; ++i)
-		{
-			bClips[i].x = 0;
-			bClips[i].y = i * 200;
-			bClips[i].w = bWidth;
-			bClips[i].h = bHeight;
-		}
-
-		button4.setPosition((sWidth - bWidth) / 2 - 200, 500);
-	}
-
-	if (!dTexture.loadFromFile("Images/pacman.png")) //Load sprite sheet texture
+	if (!dTexture.loadFromFile("Images/players.png")) //Load sprite sheet texture
 	{
 		printf("Failed to load PacMan Sprite Animation texture!\n");
 		success = false;
@@ -393,7 +353,7 @@ bool load(Tile *tiles[]) //Loads media
 		}
 	}
 
-	if (!tTexture.loadFromFile("Images/try.png")) //Load Tile Texture
+	if (!tTexture.loadFromFile("Images/tiles.png")) //Load Tile Texture
 	{
 		printf("Failed to load tile set texture!\n");
 		success = false;
@@ -422,7 +382,7 @@ bool load(Tile *tiles[]) //Loads media
 		}
 	}
 
-	if (!ghTexture1.loadFromFile("Images/col.png")) //Load ghost texture
+	if (!ghTexture1.loadFromFile("Images/hul.png")) //Load ghost texture
 	{
 		printf("Failed to load col texture!\n");
 		success = false;
@@ -453,23 +413,6 @@ bool load(Tile *tiles[]) //Loads media
 			g2Clips[i].y = 0;
 			g2Clips[i].w = dWidth;
 			g2Clips[i].h = dHeight;
-		}
-	}
-
-	if (!ghTexture3.loadFromFile("Images/hukka.png")) //Load ghost texture
-	{
-		printf("Failed to load hukka texture!\n");
-		success = false;
-	}
-	else
-	{
-		//Set sprite clips
-		for (int i = 0; i < 2; i++)
-		{
-			g3Clips[i].x = dWidth * i;
-			g3Clips[i].y = 0;
-			g3Clips[i].w = dWidth;
-			g3Clips[i].h = dHeight;
 		}
 	}
 
@@ -555,7 +498,7 @@ bool collision(SDL_Rect a, SDL_Rect b) //Check if 2 Rects touch
 bool wall(SDL_Rect box, Tile *tiles[]) //Check if a WallTile is touched
 {
 	for (int i = 0; i < tNumber; ++i)
-		if (tiles[i]->getType() == T)
+		if (tiles[i]->getType() == T || tiles[i]->getType() == I)
 			if (collision(box, tiles[i]->getBox()))
 				return true;
 	return false;
@@ -604,26 +547,19 @@ int main(int argc, char *args[])
 
 			Dot dot[dNumber];
 			for (int i = 0; i < dNumber; i++)
-			{
 				dot[i] = Dot(i);
-			}
 
 			Mix_PlayMusic(gMusic, -1);
 
 			while (!quit)
 			{
-				if (replay == true)
-				{
-					quit = true;
-				}
-
 				for (int i = 0; i < dNumber; i++)
 				{
 					++dot[i].time_req;
 					if (dot[i].time_req > 300)
 					{
 						dot[i].audit = false;
-						dot[i].scatter = false;
+						dot[i].por = false;
 					}
 				}
 
@@ -638,8 +574,6 @@ int main(int argc, char *args[])
 					//Handle button events
 					button1.handleEvent(&e, 1);
 					button2.handleEvent(&e, 2);
-					button3.handleEvent(&e, 3);
-					button4.handleEvent(&e, 4);
 				}
 
 				for (int i = 0; i < dNumber; i++)
@@ -672,17 +606,6 @@ int main(int argc, char *args[])
 					for (int i = 0; i < dNumber; i++)
 						dot[i].render(frame, dot[i].dir, i, tileSet);
 
-					/*
-					if (dNumber == 1)
-					{
-						dot[0].render(frame, dot[0].dir, 0, tileSet);
-					}
-					else if (dNumber == 2)
-					{
-						dot[0].renderFirst(frame, dot[0].dir, 0, tileSet);
-						dot[1].renderSecond(frame, dot[1].dir, 1, tileSet);
-					}
-					*/
 
 					s << "IITD x Pacman";
 					if (!loadMedia(s.str(), 50))
@@ -693,16 +616,16 @@ int main(int argc, char *args[])
 
 					if (dNumber == 1)
 					{
-						if (dot[0].ghosted == true)
+						if (dot[0].ghosted)
 							Ghosted = true;
 					}
 					else if (dNumber == 2)
 					{
-						if (dot[0].ghosted == true && dot[1].ghosted == true)
+						if (dot[0].ghosted && dot[1].ghosted)
 							Ghosted = true;
 					}
 
-					if (Ghosted == false)
+					if (!Ghosted)
 					{
 						for (int k = 0; k < dNumber; k++)
 						{
@@ -713,7 +636,7 @@ int main(int argc, char *args[])
 								gTextTexture.render((sWidth - (3 - 2 * k) * gTextTexture.getWidth()) / 2, sHeight - gTextTexture.getHeight() - 5);
 							s.str("");
 
-							if (dot[k].audit == true)
+							if (dot[k].audit)
 							{
 								s << "Audit";
 								if (!loadMedia(s.str(), 40))
@@ -723,9 +646,9 @@ int main(int argc, char *args[])
 								s.str("");
 							}
 
-							if (dot[k].scatter == true)
+							if (dot[k].por)
 							{
-								s << "Scatter";
+								s << "por";
 								if (!loadMedia(s.str(), 40))
 									printf("Failed to load media!\n");
 								else
@@ -737,14 +660,14 @@ int main(int argc, char *args[])
 						if (dNumber == 2)
 						{
 							indivAnim++;
-							if (dot[0].ghosted == true)
+							if (dot[0].ghosted)
 								dot[0].render(frame, indivAnim % 8, 0, tileSet);
-							if (dot[1].ghosted == true)
+							if (dot[1].ghosted)
 								dot[1].render(frame, indivAnim % 8, 1, tileSet);
 						}
 					}
 
-					else
+					if (Ghosted || Won)
 					{
 						exitAnim++;
 
@@ -783,9 +706,6 @@ int main(int argc, char *args[])
 									//Render current frame
 									gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, (sHeight - gTextTexture.getHeight()) / 2);
 							}
-
-							button3.render(3);
-							button4.render(4);
 						}
 					}
 				}
@@ -840,7 +760,7 @@ void Ghost::render(int bin) //Shows Ghost
 
 bool Ghost::isDead()
 {
-	if (Ghosted == false)
+	if (!Ghosted)
 		return mFrame > 15;
 	else
 		return mFrame > 3;
@@ -915,7 +835,7 @@ void Dot::move(Tile *tiles[]) //Move and Check sprite collision
 			if (tiles[i]->getType() == P)
 				if (collision(mBox, tiles[i]->getBox()))
 				{
-					scatter = true;
+					por = true;
 					time_req = 0; //Set Time to Zero
 					tiles[i]->changeType(N);
 					score += 20;
@@ -943,7 +863,7 @@ void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 	{
 		currentClip = &dClips[dir + bin];
 
-		if (ghosted == false)
+		if (!ghosted)
 			if (i) //Sounds on Key Press
 				Mix_PlayChannel(-1, gHigh, 0);
 			else
@@ -966,7 +886,7 @@ void Dot::renderFirst(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 	{
 		currentClip = &dClips[dir + bin];
 
-		if (ghosted == false)
+		if (!ghosted)
 			if (i) //Sounds on Key Press
 				Mix_PlayChannel(-1, gHigh, 0);
 			else
@@ -989,7 +909,7 @@ void Dot::renderSecond(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 	{
 		currentClip = &dClips[dir + bin];
 
-		if (ghosted == false)
+		if (!ghosted)
 			if (i) //Sounds on Key Press
 				Mix_PlayChannel(-1, gHigh, 0);
 			else
@@ -1003,7 +923,7 @@ void Dot::renderSecond(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 
 void Dot::handleEvent(SDL_Event &e, int n, Tile *tiles[]) //Takes Key Presses
 {
-	if (play == true && ghosted == false)
+	if (play && !ghosted)
 	{
 		switch (n)
 		{
@@ -1129,7 +1049,7 @@ void Dot::handleEvent(SDL_Event &e, int n, Tile *tiles[]) //Takes Key Presses
 
 void Dot::renderGhosts(Tile *tiles[], int bin)
 {
-	if (Ghosted == true)
+	if (Ghosted)
 	{
 		SDL_Rect Random = {rand() % sWidth, rand() % sHeight, mBox.w, mBox.h};
 		for (int i = 0; i < ghNumber; i++)
@@ -1137,7 +1057,7 @@ void Dot::renderGhosts(Tile *tiles[], int bin)
 	}
 	else
 	{
-		if (audit == true)
+		if (audit)
 		{
 			for (int i = 0; i < ghNumber; i++)
 			{
@@ -1149,7 +1069,7 @@ void Dot::renderGhosts(Tile *tiles[], int bin)
 				setTarget(Clyde_t, tiles, i);
 			}
 		}
-		else if (scatter == true)
+		else if (por)
 		{
 			for (int i = 0; i < ghNumber; i++)
 			{
@@ -1450,8 +1370,4 @@ void Button::render(int i) //Show current button sprite
 		bTexture1.render(mPosition.x, mPosition.y, &bClips[mCurrentSprite]);
 	else if (i == 2)
 		bTexture2.render(mPosition.x, mPosition.y, &bClips[mCurrentSprite]);
-	else if (i == 3)
-		bTexture3.render(mPosition.x, mPosition.y, &bClips[mCurrentSprite]);
-	else if (i == 4)
-		bTexture4.render(mPosition.x, mPosition.y, &bClips[mCurrentSprite]);
 }
