@@ -82,7 +82,7 @@ SDL_Renderer *WRenderer = NULL; //Window Renderer
 const int tWidth = 40;
 const int tHeight = 40;
 const int tNumber = (sWidth / tWidth) * (sHeight / tHeight);
-const int tSprites = 5;
+const int tSprites = 6;
 
 //The different tile sprites
 SDL_Rect tClips[tSprites];
@@ -91,6 +91,8 @@ const int T = 0; //Tile
 const int P = 2; //Power Pellet: Scatter
 const int A = 3; //Audit Pellet: Audit
 const int N = 4; //No Tile
+const int I = 5;
+//IIT Delhi
 
 //Dot Dimensions and Velocity
 const int dWidth = 40;
@@ -214,7 +216,7 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
 	bool tilesLoaded = true;
 	int x = 0, y = 0; //Tile Offsets
 
-	std::ifstream map("Map/default.map"); //Open mapfile
+	std::ifstream map("Map/mapfile.map"); //Open mapfile
 	if (map.fail())
 	{
 		printf("Mapfile not loaded!\n"); //If mapfile cannot be loaded
@@ -285,6 +287,12 @@ bool set(Tile *tiles[]) //Sets Tiles from Tile Map
 			tClips[A].y = 80;
 			tClips[A].w = tWidth;
 			tClips[A].h = tHeight;
+
+			//iit delhi
+			tClips[I].x = 160;
+			tClips[I].y = 80;
+			tClips[I].w = tWidth;
+			tClips[I].h = tHeight;
 		}
 	}
 
@@ -385,7 +393,7 @@ bool load(Tile *tiles[]) //Loads media
 		}
 	}
 
-	if (!tTexture.loadFromFile("Images/123.png")) //Load Tile Texture
+	if (!tTexture.loadFromFile("Images/try.png")) //Load Tile Texture
 	{
 		printf("Failed to load tile set texture!\n");
 		success = false;
@@ -556,7 +564,7 @@ bool wall(SDL_Rect box, Tile *tiles[]) //Check if a WallTile is touched
 bool loadMedia(std::string s, int n)
 {
 	bool success = true;
-	gFont = TTF_OpenFont("lazy.ttf", n);
+	gFont = TTF_OpenFont("Fonts/lazy.ttf", n);
 
 	if (gFont == NULL)
 	{
@@ -740,7 +748,7 @@ int main(int argc, char *args[])
 								gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, (sHeight - gTextTexture.getHeight()) / 2 - 160);
 							s.str("");
 
-							s << "YOUR SCORE (Arrow): " << dot[0].score-1;
+							s << "YOUR SCORE (Arrow): " << dot[0].score - 1;
 							if (!loadMedia(s.str(), 100))
 								printf("Failed to load media!\n");
 							else
