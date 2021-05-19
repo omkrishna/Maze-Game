@@ -9,10 +9,11 @@ class Dot
 public:
     Dot();
     Dot(int i);
-
-    int time_req;
-    int score = 0;
+ 
     int dir = 2;
+    int time_req;
+    int score = -1;
+    int ghostedby;
     bool animFlag = false;
     bool ghosted = false;
     bool audit = false;
