@@ -96,7 +96,8 @@ const int dDir = 4;
 const int lDir = 6;
 
 //Dot Animation
-SDL_Rect dClips[dSprites];
+SDL_Rect d1Clips[dSprites];
+SDL_Rect d2Clips[dSprites];
 int dNumber = 2; //No of Players
 int frame = 0;	 //Animation Frame
 
@@ -115,7 +116,6 @@ int ghDir[ghNumber] = {0};		//Direction
 SDL_Rect g0Clips[ghSprites];
 SDL_Rect g1Clips[ghSprites];
 SDL_Rect g2Clips[ghSprites];
-SDL_Rect g3Clips[ghSprites];
 
 //Ghost Directions
 const int ghU = 0;
@@ -388,13 +388,45 @@ bool load(Tile *tiles[]) //Loads media
 	}
 	else
 	{
-		//Set sprite clips
-		for (int i = 0; i < dSprites; i++)
+		//Randomize Character : PacMan or PacWoman
+		int r = rand() % 2;
+		if (r == 0)
 		{
-			dClips[i].x = dWidth * i;
-			dClips[i].y = 0;
-			dClips[i].w = dWidth;
-			dClips[i].h = dHeight;
+			for (int i = 0; i < dSprites; i++)
+			{
+				d1Clips[i].x = dWidth * i;
+				d1Clips[i].y = 0;
+				d1Clips[i].w = dWidth;
+				d1Clips[i].h = dHeight;
+			}
+
+			if (dNumber == 2)
+				for (int i = 0; i < dSprites; i++)
+				{
+					d2Clips[i].x = dWidth * i;
+					d2Clips[i].y = dHeight;
+					d2Clips[i].w = dWidth;
+					d2Clips[i].h = dHeight;
+				}
+		}
+		else
+		{
+			for (int i = 0; i < dSprites; i++)
+			{
+				d1Clips[i].x = dWidth * i;
+				d1Clips[i].y = dHeight;
+				d1Clips[i].w = dWidth;
+				d1Clips[i].h = dHeight;
+			}
+
+			if (dNumber == 2)
+				for (int i = 0; i < dSprites; i++)
+				{
+					d2Clips[i].x = dWidth * i;
+					d2Clips[i].y = 0;
+					d2Clips[i].w = dWidth;
+					d2Clips[i].h = dHeight;
+				}
 		}
 	}
 
@@ -1136,7 +1168,7 @@ Ghost::Ghost(int x, int y, int i) //Initializes Ghost
 void Ghost::render(int bin) //Shows Ghost
 {
 	SDL_Rect *currentClip; //Show image
-	currentClip = &dClips[bin];
+	currentClip = &g0Clips[bin];
 	mTexture->render(mBox.x, mBox.y, currentClip);
 
 	mFrame++; //Animate
@@ -1158,15 +1190,20 @@ Dot::Dot()
 
 Dot::Dot(int i) //Initializes Variables
 {
-	if (i == 0)
+	if (i == 0) //Collision box offset and Sprite direction
 	{
-		mBox.x = tWidth; //Collision box offset
+		mBox.x = tWidth;
 		mBox.y = tHeight;
+		dir = 2;
 	}
 	else
 	{
-		mBox.x = sWidth - ghWidth - tWidth; //Collision box offset
-		mBox.y = tHeight;
+		if (dNumber == 2)
+		{
+			mBox.x = sWidth - ghWidth - tWidth;
+			mBox.y = tHeight;
+			dir = 6;
+		}
 	}
 
 	mBox.w = dWidth; //Collision box dimensions
@@ -1260,7 +1297,10 @@ void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 
 	if (animFlag) //Animate Dot
 	{
-		currentClip = &dClips[dir + bin];
+		if (i)
+			currentClip = &d1Clips[dir + bin];
+		else
+			currentClip = &d2Clips[dir + bin];
 
 		if (!ghosted)
 			if (i) //Sounds on Key Press
@@ -1269,7 +1309,12 @@ void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 				Mix_PlayChannel(-1, gLow, 0);
 	}
 	else
-		currentClip = &dClips[dir];
+	{
+		if (i)
+			currentClip = &d1Clips[dir];
+		else
+			currentClip = &d2Clips[dir];
+	}
 
 	dTexture.render(mBox.x, mBox.y, currentClip); //Show Dot
 }
