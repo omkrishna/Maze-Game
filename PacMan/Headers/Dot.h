@@ -17,6 +17,7 @@ public:
     bool ghosted = false;
     bool audit = false;
     bool por = false;
+    SDL_Rect mBox;
 
     void handleEvent(SDL_Event &e, int n, Tile *tiles[]);
     void move(Tile *tiles[]);
@@ -26,12 +27,11 @@ public:
 
     SDL_Rect getBox();
 
-private:
-    SDL_Rect mBox;
+    void setTarget(SDL_Rect ghost, Tile *tiles[], int i);
 
+private:
     int mType;
     int mVelX, mVelY;
 
     void renderGhosts(Tile *tiles[], int bin);
-    void setTarget(SDL_Rect ghost, Tile *tiles[], int i);
 };

@@ -527,6 +527,97 @@ bool loadMedia(std::string s, int n)
 	return success;
 }
 
+void renderGhostsMultiplayer(Dot &dot1, Dot &dot2, Tile *tiles[], int frame)
+{
+	int bin = (frame % (2 * dSprites) > dSprites) ? 0 : 1;
+
+	if (Ghosted)
+	{
+		SDL_Rect Random = {rand() % sWidth, rand() % sHeight, dot1.mBox.w, dot1.mBox.h};
+		for (int i = 0; i < ghNumber; i++)
+			dot1.setTarget(Random, tiles, i);
+	}
+	else
+	{
+		//dot1 - ghost
+		if (dot1.audit)
+		{
+			SDL_Rect Clyde_t; //Clyde: Ghosts[3]
+			if (dist(Ghosts[0]->mBox, dot1.mBox) > 8 * tHeight)
+				Clyde_t = {dot1.mBox.x, dot1.mBox.y, dot1.mBox.w, dot1.mBox.h};
+			else
+				Clyde_t = Corner[0];
+			dot1.setTarget(Clyde_t, tiles, 0);
+		}
+		else if (dot1.por)
+		{
+
+			SDL_Rect Clyde_t = Corner[0];
+			dot1.setTarget(Clyde_t, tiles, 0);
+		}
+		else
+		{
+			if (!dot1.ghosted)
+			{
+				SDL_Rect Blinky_t = {dot1.mBox.x, dot1.mBox.y, dot1.mBox.w, dot1.mBox.h}; //Blinky: Ghosts[0]
+				dot1.setTarget(Blinky_t, tiles, 0);
+			}
+			else
+			{
+				SDL_Rect Blinky_t = {dot2.mBox.x, dot2.mBox.y, dot2.mBox.w, dot2.mBox.h}; //Blinky: Ghosts[0]
+				dot2.setTarget(Blinky_t, tiles, 0);
+			}
+		}
+
+		//dot2 - ghost 1 & 2
+		if (dot2.audit)
+		{
+
+			SDL_Rect Clyde_t; //Clyde: Ghosts[3]
+			if (dist(Ghosts[1]->mBox, dot2.mBox) > 8 * tHeight)
+				Clyde_t = {dot2.mBox.x, dot2.mBox.y, dot2.mBox.w, dot2.mBox.h};
+			else
+				Clyde_t = Corner[1];
+			dot2.setTarget(Clyde_t, tiles, 1);
+		}
+		else if (dot2.por)
+		{
+
+			SDL_Rect Clyde_t = Corner[1];
+			dot2.setTarget(Clyde_t, tiles, 1);
+		}
+		else
+		{
+			if (!dot2.ghosted)
+			{
+				SDL_Rect Blinky_t = {dot2.mBox.x, dot2.mBox.y, dot2.mBox.w, dot2.mBox.h}; //Blinky: Ghosts[0]
+				dot2.setTarget(Blinky_t, tiles, 1);
+				//ghost 0 behaves like pinky
+			}
+			else
+			{
+				SDL_Rect Blinky_t = {dot1.mBox.x, dot1.mBox.y, dot1.mBox.w, dot1.mBox.h}; //Blinky: Ghosts[0]
+				dot1.setTarget(Blinky_t, tiles, 1);
+				//ghost 0 behaves like pinky
+			}
+		}
+
+		SDL_Rect Inky_t = {2 * Ghosts[1]->mBox.x - Ghosts[0]->mBox.x, 2 * Ghosts[0]->mBox.y - Ghosts[0]->mBox.y, dot1.mBox.w, dot1.mBox.h}; //Inky: Ghosts[2]
+		dot1.setTarget(Inky_t, tiles, 2);
+	}
+
+	for (int i = 0; i < ghNumber; ++i)
+
+		if (Ghosts[i]->isDead()) //Delete and Replace Dead Ghosts
+		{
+			delete Ghosts[i];
+			Ghosts[i] = new Ghost(px[i], py[i], i);
+		}
+
+	for (int i = 0; i < ghNumber; ++i) //Show Ghosts
+		Ghosts[i]->render(bin);
+}
+
 int main(int argc, char *args[])
 {
 	std::stringstream s;
@@ -606,6 +697,8 @@ int main(int argc, char *args[])
 					for (int i = 0; i < dNumber; i++)
 						dot[i].render(frame, dot[i].dir, i, tileSet);
 
+					if (dNumber == 2)
+						renderGhostsMultiplayer(dot[0], dot[1], tileSet, frame);
 
 					s << "IITD x Pacman";
 					if (!loadMedia(s.str(), 50))
@@ -622,7 +715,10 @@ int main(int argc, char *args[])
 					else if (dNumber == 2)
 					{
 						if (dot[0].ghosted && dot[1].ghosted)
+						{
+
 							Ghosted = true;
+						}
 					}
 
 					if (!Ghosted)
@@ -700,7 +796,7 @@ int main(int argc, char *args[])
 							if (dNumber == 2)
 							{
 								s << "YOUR SCORE (WSAD): " << dot[1].score;
-								if (!loadMedia(s.str(), 100))
+								if (!loadMedia(s.str(), 80))
 									printf("Failed to load media!\n");
 								else
 									//Render current frame
@@ -857,53 +953,8 @@ void Dot::render(int frame, int dir, int i, Tile *tiles[]) //Show Dot
 	int bin = (frame % (2 * dSprites) > dSprites) ? 0 : 1;
 	SDL_Rect *currentClip;
 
-	renderGhosts(tiles, bin); //Show Ghosts
-
-	if (animFlag) //Animate Dot
-	{
-		currentClip = &dClips[dir + bin];
-
-		if (!ghosted)
-			if (i) //Sounds on Key Press
-				Mix_PlayChannel(-1, gHigh, 0);
-			else
-				Mix_PlayChannel(-1, gLow, 0);
-	}
-	else
-		currentClip = &dClips[dir];
-
-	dTexture.render(mBox.x, mBox.y, currentClip); //Show Dot
-}
-
-void Dot::renderFirst(int frame, int dir, int i, Tile *tiles[]) //Show Dot
-{
-	int bin = (frame % (2 * dSprites) > dSprites) ? 0 : 1;
-	SDL_Rect *currentClip;
-
-	renderGhosts(tiles, bin); //Show Ghosts
-
-	if (animFlag) //Animate Dot
-	{
-		currentClip = &dClips[dir + bin];
-
-		if (!ghosted)
-			if (i) //Sounds on Key Press
-				Mix_PlayChannel(-1, gHigh, 0);
-			else
-				Mix_PlayChannel(-1, gLow, 0);
-	}
-	else
-		currentClip = &dClips[dir];
-
-	dTexture.render(mBox.x, mBox.y, currentClip); //Show Dot
-}
-
-void Dot::renderSecond(int frame, int dir, int i, Tile *tiles[]) //Show Dot
-{
-	int bin = (frame % (2 * dSprites) > dSprites) ? 0 : 1;
-	SDL_Rect *currentClip;
-
-	renderGhosts(tiles, bin); //Show Ghosts
+	if (dNumber == 1)
+		renderGhosts(tiles, bin); //Show Ghosts
 
 	if (animFlag) //Animate Dot
 	{
@@ -1125,7 +1176,9 @@ void Dot::setTarget(SDL_Rect ghost, Tile *tiles[], int i)
 	rBox = {gx + ghHeight, gy, ghWidth, ghHeight};
 
 	if (collision(Ghosts[i]->mBox, mBox))
+	{
 		ghosted = true;
+	}
 
 	int udist, ddist, ldist, rdist;
 	udist = ddist = ldist = rdist = INT_MAX;
