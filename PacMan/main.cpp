@@ -912,7 +912,7 @@ int main(int argc, char *args[])
 							if (!loadMedia(s.str(), 40))
 								printf("Failed to load media!\n");
 							else
-								gTextTexture.render((sWidth - (3 - 2 * k) * gTextTexture.getWidth()) / 2, sHeight - gTextTexture.getHeight() - 5);
+								gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2 + pow(-1, k) * (dNumber - 1) * gTextTexture.getWidth(), sHeight - gTextTexture.getHeight() - 5);
 							s.str("");
 
 							if (dot[k].audit)
@@ -921,7 +921,7 @@ int main(int argc, char *args[])
 								if (!loadMedia(s.str(), 40))
 									printf("Failed to load media!\n");
 								else
-									gTextTexture.render(0, sHeight - gTextTexture.getHeight() - 5);
+									gTextTexture.render(5, sHeight - gTextTexture.getHeight() - 5);
 								s.str("");
 							}
 
@@ -931,7 +931,7 @@ int main(int argc, char *args[])
 								if (!loadMedia(s.str(), 40))
 									printf("Failed to load media!\n");
 								else
-									gTextTexture.render(sWidth - gTextTexture.getWidth(), sHeight - gTextTexture.getHeight() - 5);
+									gTextTexture.render(sWidth - gTextTexture.getWidth() - 5, sHeight - gTextTexture.getHeight() - 5);
 								s.str("");
 							}
 						}
