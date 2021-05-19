@@ -3,6 +3,9 @@
   A two player pacman-ish maze game built as part of the course COP290 under Prof. Rijurekha Sen<br>
   Authors : <a href="https://github.com/Harshita2605">Harshita</a> & <a href="https://github.com/omkrishna">Om</a></p>
   
+  ![ezgif com-gif-maker (4)](https://user-images.githubusercontent.com/10244292/118809280-0a420180-b8c8-11eb-9b9c-dd6e5088a006.gif)
+
+  
 <h2>Getting Started</h2>
 <h3>Dependencies</h3>
 <ul>
