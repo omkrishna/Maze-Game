@@ -19,12 +19,13 @@
 //Button constants
 const int bWidth = 230;
 const int bHeight = 60;
-const int nButton = 2;
+const int nButton = 5;
 
 enum bTypes
 {
 	bMouse = 0,
-	bSprites = 1
+	bMouseClick = 1,
+	bSprites = 2
 };
 //Mouse button sprites
 SDL_Rect bClips[bSprites];
@@ -37,7 +38,7 @@ public:
 
 	void setPosition(int x, int y);
 	void handleEvent(SDL_Event *e, int i);
-	void render(int i);
+	void render(int i, int x, int y);
 	bool rules = false;
 
 private:
@@ -48,6 +49,9 @@ private:
 //Buttons objects
 Button button1; //Single Player
 Button button2; //Multi Player
+Button beg;
+Button med;
+Button adv;
 
 //GamePlay Flags
 bool Won = false;
@@ -55,6 +59,8 @@ bool quit = false;
 bool play = false;
 bool replay = false;
 bool Ghosted = false;
+
+int level = 2; //Intermediate By Default
 
 //Screen and Window
 const int sWidth = 1080;
@@ -132,6 +138,9 @@ Texture dTexture;
 Texture tTexture;
 Texture bTexture1;
 Texture bTexture2;
+Texture begTexture;
+Texture medTexture;
+Texture advTexture;
 Texture ghTexture0; //Ghosts[0] = COP
 Texture ghTexture1; //Ghosts[1] = HUL
 Texture ghTexture2; //Ghosts[2] = ELL
@@ -308,7 +317,6 @@ bool load(Tile *tiles[]) //Loads media
 		success = false;
 	}
 	else
-	{
 		for (int i = 0; i < bSprites; ++i)
 		{
 			bClips[i].x = 0;
@@ -316,9 +324,6 @@ bool load(Tile *tiles[]) //Loads media
 			bClips[i].w = bWidth;
 			bClips[i].h = bHeight;
 		}
-
-		button1.setPosition((sWidth - bWidth) / 2 - bWidth, 600);
-	}
 
 	if (!bTexture2.loadFromFile("Images/2player(2).png")) //Multi Player
 	{
@@ -326,7 +331,6 @@ bool load(Tile *tiles[]) //Loads media
 		success = false;
 	}
 	else
-	{
 		for (int i = 0; i < bSprites; ++i)
 		{
 			bClips[i].x = 0;
@@ -335,8 +339,47 @@ bool load(Tile *tiles[]) //Loads media
 			bClips[i].h = bHeight;
 		}
 
-		button2.setPosition((sWidth - bWidth) / 2 + bWidth, 600);
+	if (!begTexture.loadFromFile("Images/beg.png"))
+	{
+		printf("Failed to load button sprite texture!\n");
+		success = false;
 	}
+	else
+		for (int i = 0; i < bSprites; ++i)
+		{
+			bClips[i].x = 0;
+			bClips[i].y = 0 + bHeight * i;
+			bClips[i].w = bWidth;
+			bClips[i].h = bHeight;
+		}
+
+	if (!medTexture.loadFromFile("Images/int.png"))
+	{
+		printf("Failed to load button sprite texture!\n");
+		success = false;
+	}
+	else
+		for (int i = 0; i < bSprites; ++i)
+		{
+			bClips[i].x = 0;
+			bClips[i].y = 0 + bHeight * i;
+			bClips[i].w = bWidth;
+			bClips[i].h = bHeight;
+		}
+
+	if (!advTexture.loadFromFile("Images/adv.png"))
+	{
+		printf("Failed to load button sprite texture!\n");
+		success = false;
+	}
+	else
+		for (int i = 0; i < bSprites; ++i)
+		{
+			bClips[i].x = 0;
+			bClips[i].y = 0 + bHeight * i;
+			bClips[i].w = bWidth;
+			bClips[i].h = bHeight;
+		}
 
 	if (!dTexture.loadFromFile("Images/players.png")) //Load sprite sheet texture
 	{
@@ -434,13 +477,11 @@ bool load(Tile *tiles[]) //Loads media
 void close(Tile *tiles[]) //Frees media and shuts down SDL
 {
 	for (int i = 0; i < tNumber; ++i) //Deallocate tiles
-	{
 		if (tiles[i] != NULL)
 		{
 			delete tiles[i];
 			tiles[i] = NULL;
 		}
-	}
 
 	tTexture.free(); //Free loaded images
 	dTexture.free();
@@ -680,6 +721,9 @@ int main(int argc, char *args[])
 					//Handle button events
 					button1.handleEvent(&e, 1);
 					button2.handleEvent(&e, 2);
+					beg.handleEvent(&e, 3);
+					med.handleEvent(&e, 4);
+					adv.handleEvent(&e, 5);
 				}
 
 				for (int i = 0; i < dNumber; i++)
@@ -692,63 +736,69 @@ int main(int argc, char *args[])
 				if (play == false)
 				{
 					int h = 90;
-					if (frame % 10)
+					if (frame % 75)
 						sTexture1.render(0, 0);
 					else
 						sTexture2.render(0, 0);
 
-					s << "IITD x Pacman";
-					if (!loadMedia(s.str(), 80))
-						printf("Failed to load media!\n");
-					else
-						gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h);
-					s.str("");
+					{
+						s << "IITD x Pacman";
+						if (!loadMedia(s.str(), 80))
+							printf("Failed to load media!\n");
+						else
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h);
+						s.str("");
 
-					s << "Welcome to IITD (Pacman-ish Simulation)";
-					if (!loadMedia(s.str(), 35))
-						printf("Failed to load media!\n");
-					else
-						gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 80);
-					s.str("");
+						s << "Welcome to IITD (Pacman-ish Simulation)";
+						if (!loadMedia(s.str(), 35))
+							printf("Failed to load media!\n");
+						else
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 80);
+						s.str("");
 
-					s << "Scoring:";
-					if (!loadMedia(s.str(), 25))
-						printf("Failed to load media!\n");
-					else
-						gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 160);
-					s.str("");
+						s << "Scoring:";
+						if (!loadMedia(s.str(), 25))
+							printf("Failed to load media!\n");
+						else
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 260);
+						s.str("");
 
-					s << "-Collect Regular Pellets to increase score by 1";
-					if (!loadMedia(s.str(), 25))
-						printf("Failed to load media!\n");
-					else
-						gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 185);
-					s.str("");
+						s << "-Collect Regular Pellets to increase score by 1";
+						if (!loadMedia(s.str(), 25))
+							printf("Failed to load media!\n");
+						else
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 285);
+						s.str("");
 
-					s << "-Collect PORs to increase score by 10";
-					if (!loadMedia(s.str(), 25))
-						printf("Failed to load media!\n");
-					else
-						gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 210);
-					s.str("");
+						s << "-Collect PORs to increase score by 10";
+						if (!loadMedia(s.str(), 25))
+							printf("Failed to load media!\n");
+						else
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 310);
+						s.str("");
 
-					s << "-Audit courses to increase score by 20 and decrease chances of failing";
-					if (!loadMedia(s.str(), 25))
-						printf("Failed to load media!\n");
-					else
-						gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 235);
-					s.str("");
+						s << "-Audit courses to increase score by 20 and decrease chances of failing";
+						if (!loadMedia(s.str(), 25))
+							printf("Failed to load media!\n");
+						else
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 335);
+						s.str("");
 
-					s << "Rules;";
-					if (!loadMedia(s.str(), 25))
-						printf("Failed to load media!\n");
-					else
-						gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 310);
-					s.str("");
+						s << "Rules;";
+						if (!loadMedia(s.str(), 25))
+							printf("Failed to load media!\n");
+						else
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 410);
+						s.str("");
+					}
 
 					//Render buttons
-					button1.render(1);
-					button2.render(2);
+					beg.render(3, (sWidth - bWidth) / 2 - 1.5 * bWidth, h + 160);
+					med.render(4, (sWidth - bWidth) / 2, h + 160);
+					adv.render(5, (sWidth - bWidth) / 2 + 1.5 * bWidth, h + 160);
+
+					button1.render(1, (sWidth - bWidth) / 2 - bWidth, 650);
+					button2.render(2, (sWidth - bWidth) / 2 + bWidth, 650);
 
 					if (button1.rules)
 					{
@@ -756,14 +806,14 @@ int main(int argc, char *args[])
 						if (!loadMedia(s.str(), 25))
 							printf("Failed to load media!\n");
 						else
-							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 335);
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 435);
 						s.str("");
 
 						s << "-Avoid Course Ghosts or Fail";
 						if (!loadMedia(s.str(), 25))
 							printf("Failed to load media!\n");
 						else
-							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 360);
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 460);
 						s.str("");
 					}
 
@@ -773,21 +823,21 @@ int main(int argc, char *args[])
 						if (!loadMedia(s.str(), 25))
 							printf("Failed to load media!\n");
 						else
-							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 335);
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 435);
 						s.str("");
 
 						s << "-Player2: Use WSAD Keys to move around the Campus Maze";
 						if (!loadMedia(s.str(), 25))
 							printf("Failed to load media!\n");
 						else
-							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 360);
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 460);
 						s.str("");
 
 						s << "-Avoid Course Ghosts or Fail";
 						if (!loadMedia(s.str(), 25))
 							printf("Failed to load media!\n");
 						else
-							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 385);
+							gTextTexture.render((sWidth - gTextTexture.getWidth()) / 2, h + 485);
 						s.str("");
 					}
 				}
@@ -882,7 +932,7 @@ int main(int argc, char *args[])
 							SDL_SetRenderDrawColor(WRenderer, 0, 0, 0, 0);
 							SDL_RenderClear(WRenderer);
 
-							if (frame % 10)
+							if (frame % 75)
 								sTexture1.render(0, 0);
 							else
 								sTexture2.render(0, 0);
@@ -1095,7 +1145,7 @@ void Ghost::render(int bin) //Shows Ghost
 bool Ghost::isDead()
 {
 	if (!Ghosted)
-		return mFrame > 1000;
+		return mFrame > 10 * level;
 	else
 		return mFrame > 3;
 }
@@ -1639,11 +1689,20 @@ void Button::handleEvent(SDL_Event *e, int i) //Takes Mouse Events
 	{
 		int x, y; //Get mouse position
 		SDL_GetMouseState(&x, &y);
-		mCurrentSprite = bMouse;
+		//mCurrentSprite = bMouse;
 
 		bool inside = true;
-		if (x < mPosition.x || x > mPosition.x + bWidth || y < mPosition.y || y > mPosition.y + bHeight)
-			inside = false;
+
+		if (i == 1 || i == 2)
+		{
+			if (x < mPosition.x || x > mPosition.x + bWidth || y < mPosition.y || y > mPosition.y + bHeight)
+				inside = false;
+		}
+		else
+		{
+			if (x < mPosition.x || x > mPosition.x + bWidth || y < mPosition.y || y > mPosition.y + bHeight)
+				inside = false;
+		}
 
 		if (!inside) //Mouse is outside button
 			rules = false;
@@ -1656,26 +1715,80 @@ void Button::handleEvent(SDL_Event *e, int i) //Takes Mouse Events
 				break;
 
 			case SDL_MOUSEBUTTONDOWN:
-				if (i == 4)
-					quit = true;
-				else if (i == 3)
-					replay = true;
-				else
-					dNumber = i;
-				break;
+				switch (i)
+				{
+				case 1:
+					dNumber = 1;
+					break;
+
+				case 2:
+					dNumber = 2;
+					break;
+
+				case 3:
+					mCurrentSprite = bMouseClick;
+					med.mCurrentSprite = bMouse;
+					adv.mCurrentSprite = bMouse;
+					level = 3;
+					break;
+
+				case 4:
+					mCurrentSprite = bMouseClick;
+					beg.mCurrentSprite = bMouse;
+					adv.mCurrentSprite = bMouse;
+					level = 2;
+					break;
+
+				case 5:
+					mCurrentSprite = bMouseClick;
+					beg.mCurrentSprite = bMouse;
+					med.mCurrentSprite = bMouse;
+					level = 1;
+					break;
+				default:
+					break;
+				}
 
 			case SDL_MOUSEBUTTONUP:
-				play = true;
+				if (i == 1 || i == 2)
+					play = true;
+				else
+					mCurrentSprite = bMouseClick;
 				break;
 			}
 		}
 	}
 }
 
-void Button::render(int i) //Show current button sprite
+void Button::render(int i, int x, int y) //Show current button sprite
 {
-	if (i == 1)
+	switch (i)
+	{
+	case 1:
 		bTexture1.render(mPosition.x, mPosition.y, &bClips[mCurrentSprite]);
-	else if (i == 2)
+		button1.setPosition(x, y);
+		break;
+
+	case 2:
 		bTexture2.render(mPosition.x, mPosition.y, &bClips[mCurrentSprite]);
+		button2.setPosition(x, y);
+		break;
+
+	case 3:
+		begTexture.render(mPosition.x, mPosition.y, &bClips[mCurrentSprite]);
+		beg.setPosition(x, y);
+		break;
+
+	case 4:
+		medTexture.render(mPosition.x, mPosition.y, &bClips[mCurrentSprite]);
+		med.setPosition(x, y);
+		break;
+
+	case 5:
+		advTexture.render(mPosition.x, mPosition.y, &bClips[mCurrentSprite]);
+		adv.setPosition(x, y);
+		break;
+	default:
+		break;
+	}
 }
