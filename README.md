@@ -3,7 +3,7 @@
   A two player pacman-ish maze game built as part of the course COP290 under Prof. Rijurekha Sen<br>
   Authors : <a href="https://github.com/Harshita2605">Harshita</a> & <a href="https://github.com/omkrishna">Om</a></p>
   
-<h1>Getting Started</h1>
+<h2>Getting Started</h2>
 <h3>Dependencies</h3>
 <ul>
   <li>G++, which is a C++ compiler </li>
@@ -36,10 +36,16 @@ make
 ```
 
 
-<h1> Follow Up </h1>
+<h2> Follow Up </h2>
 <h3> <a href=""> Playing Guide </a></h3>
 <h3> <a href=""> Roadmap </a> </h3>
 
+<h2>Acknowledgments</h2>
+<ul>
+  <li> <a href="">Lazy Foo</a>'s sdl tutorials are a must watch for anyone who wants to try out SDL. Music, Textures, Fonts, TileMaps - this tutorial has everything covered as far as SDL is concerned. </li>
+  <li> <a href="https://shaunlebron.github.io/pacman-mazegen/"> Shaun Lebron</a>'s article on Random Pacman maze generation was a very tough read but gives excellent results. We couldn't follow his code but did get the idea of stacking tetris-like blocks together to generate mazes. </li>
+  <li> <a href="https://www.youtube.com/watch?v=ataGotQ7ir8">This Youtube video</a> gives a great insight about the algorithms ghosts follow to set their targets in pacman. Very fascinating</li>
+</ul>
 
 
 
