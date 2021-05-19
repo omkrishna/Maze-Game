@@ -51,16 +51,25 @@ void genMidBlocks(int start, int end)
             {
                 if (j == ((j_max - 14) / 2) || j == ((j_max - 15) / 2 + 1) || j == ((j_max - 15) / 2 + 3) || j == ((j_max - 15) / 2 + 4) || j == ((j_max - 15) / 2 + 6) || j == ((j_max - 15) / 2 + 7) || j == ((j_max - 15) / 2 + 8) || j == ((j_max - 15) / 2 + 9) || j == ((j_max - 15) / 2 + 11) || j == ((j_max - 15) / 2 + 12) || j == ((j_max - 15) / 2 + 14))
                     maze[i][j] = 5;
+
+                if (j == ((j_max - 15) / 2 + 13))
+                    maze[i][j] = 0;
             }
             else if (i == start + 1)
             {
                 if (j == ((j_max - 14) / 2) || j == ((j_max - 15) / 2 + 1) || j == ((j_max - 15) / 2 + 3) || j == ((j_max - 15) / 2 + 4) || j == ((j_max - 15) / 2 + 7) || j == ((j_max - 15) / 2 + 8) || j == ((j_max - 15) / 2 + 11) || j == ((j_max - 15) / 2 + 12) || j == ((j_max - 15) / 2 + 14))
                     maze[i][j] = 5;
+
+                if (j == ((j_max - 15) / 2 + 13))
+                    maze[i][j] = 0;
             }
             else if (i == start + 2)
             {
                 if (j == ((j_max - 14) / 2) || j == ((j_max - 15) / 2 + 1) || j == ((j_max - 15) / 2 + 3) || j == ((j_max - 15) / 2 + 4) || j == ((j_max - 15) / 2 + 7) || j == ((j_max - 15) / 2 + 8) || j == ((j_max - 15) / 2 + 11) || j == ((j_max - 15) / 2 + 12) || j == ((j_max - 15) / 2 + 14))
                     maze[i][j] = 5;
+
+                if (j == ((j_max - 15) / 2 + 13))
+                    maze[i][j] = 0;
             }
             else if (i == start + 3)
             {
